@@ -91,6 +91,7 @@ my %attrs = (
     "recomputeAt" => "multiple-strict,MoonRise,MoonSet,MoonTransit,NewDay,SeasonalHr,SunRise,SunSet,SunTransit,AstroTwilightEvening,AstroTwilightMorning,CivilTwilightEvening,CivilTwilightMorning,CustomTwilightEvening,CustomTwilightMorning",
     "schedule"    => "multiple-strict,MoonPhaseS,MoonRise,MoonSet,MoonSign,MoonTransit,ObsDate,ObsIsDST,ObsMeteoSeason,ObsPhenoSeason,ObsSeason,ObsSeasonalHr,SunRise,SunSet,SunSign,SunTransit,AstroTwilightEvening,AstroTwilightMorning,CivilTwilightEvening,CivilTwilightMorning,NauticTwilightEvening,NauticTwilightMorning,CustomTwilightEvening,CustomTwilightMorning",
     "seasonalHrs" => undef,
+    "timezone"    => undef,
 );
 
 my $json;
@@ -1529,7 +1530,7 @@ _LoadOptionalPackages();
 
 sub SunRise($$$$$$$$);
 sub MoonRise($$$$$$$);
-sub SetTime(;$$);
+sub SetTime(;$$$);
 sub Compute($;$$);
 
 ########################################################################################################
@@ -2792,8 +2793,13 @@ sub MoonRise($$$$$$$){
 # 
 ########################################################################################################
 
-sub SetTime (;$$) {
-    my ( $time, $dayOffset ) = @_;
+sub SetTime (;$$$) {
+    my ( $time, $tz, $dayOffset ) = @_;
+
+    #-- readjust timezone
+    local $ENV{TZ} = $tz if ($tz);
+    tzset();
+
     $time = gettimeofday() unless ( defined($time) );
     $dayOffset = 2 unless ( defined($dayOffset) );
     my $D = $dayOffset ? \%Date : {};
@@ -2833,7 +2839,7 @@ sub SetTime (;$$) {
     if ($dayOffset) {
         my $i = $dayOffset * -1.;
         while ( $i < $dayOffset + 1. ) {
-            $D->{$i} = SetTime( $time + ( 86400. * $i ), 0 )
+            $D->{$i} = SetTime( $time + ( 86400. * $i ), $tz, 0 )
               unless ( $i == 0 );
             $i++;
         }
@@ -2841,6 +2847,9 @@ sub SetTime (;$$) {
     else {
         return $D;
     }
+
+    delete local $ENV{TZ};
+    tzset();
 
     return (undef);
 }
@@ -2854,11 +2863,11 @@ sub SetTime (;$$) {
 sub Compute($;$$){
   my ($hash,$dayOffset,$params) = @_;
   undef %Astro unless($dayOffset);
-  SetTime() if (scalar keys %Date == 0); # fill %Date if it is still empty after restart
+  my $name = $hash->{NAME};
+  my $tz = AttrVal($name,"timezone",AttrVal("global","timezone",undef));
+  SetTime(undef, $tz) if (scalar keys %Date == 0); # fill %Date if it is still empty after restart
   my $A = $dayOffset ? {} : \%Astro;
   my $D = $dayOffset ? $Date{$dayOffset} : \%Date;
-
-  my $name = $hash->{NAME};
 
   return undef if( !$init_done );
 
@@ -2873,6 +2882,10 @@ sub Compute($;$$){
   }else{
     $tt = $transtable{EN};
   }
+
+  #-- readjust timezone
+  local $ENV{TZ} = $tz if ($tz);
+  tzset();
 
   #-- load schedule schema
   my @schedsch =
@@ -3743,6 +3756,9 @@ sub Compute($;$$){
     $A->{ObsSchedUpcoming} = "---";
   }
 
+  delete local $ENV{TZ};
+  tzset();
+
   return $A
     if ($dayOffset);
   return( undef );
@@ -3834,9 +3850,10 @@ sub Update($@) {
 
   return undef if (IsDisabled($name));
 
+  my $tz = AttrVal($name,"timezone",AttrVal("global","timezone",undef));
   my $now = gettimeofday();    # conserve timestamp before recomputing
 
-  SetTime();
+  SetTime(undef, $tz);
   Compute($hash);
 
   my @next;
@@ -3939,6 +3956,7 @@ sub Get($@) {
 
   my $wantsreading = 0;
   my $dayOffset = 0;
+  my $tz = AttrVal($name,"timezone",AttrVal("global","timezone",undef));
 
   #-- fill %Astro if it is still empty after restart
   Compute($hash, undef, $h) if (scalar keys %Astro == 0);
@@ -3970,13 +3988,13 @@ sub Get($@) {
               defined($2) ? $2 : (defined($8) ? $8 : 0),
               defined($1) ? $1 : (defined($7) ? $7 : 12),
               (defined($4)? ($6,$5-1,$4) : (localtime(gettimeofday()))[3,4,5])
-          ) + ( $dayOffset * 86400. )
+          ) + ( $dayOffset * 86400. ), $tz
         )
     }else{
       return "[FHEM::Astro::Get] $name has improper time specification $str, use YYYY-MM-DD [HH:MM:SS] [-1|yesterday|+1|tomorrow]";
     }
   }else{
-    SetTime(gettimeofday + ($dayOffset * 86400.));
+    SetTime(gettimeofday + ($dayOffset * 86400.), $tz);
   }
 
   if( $a->[0] eq "version") {
@@ -3984,6 +4002,7 @@ sub Get($@) {
     
   }elsif( $a->[0] eq "json") {
     Compute($hash, undef, $h);
+
     #-- beautify JSON at cost of performance only when debugging
     if (ref($json) && AttrVal($name,"verbose",AttrVal("global","verbose",3)) > 3.) {
       $json->canonical;
@@ -4003,11 +4022,18 @@ sub Get($@) {
     }
     
   }elsif( $a->[0] eq "text") {
-  
     Compute($hash, undef, $h);
+
+    my $lang = uc(AttrVal($name,"language",AttrVal("global","language","EN")));
+    my $old_locale = setlocale(LC_NUMERIC);
+    setlocale(LC_NUMERIC, lc($lang)."_".uc($lang).".UTF-8");
+
+    use locale;
+
     if( $wantsreading==1 ){
       return $Astro{$a->[1]};
     }else{
+
       my $ret=sprintf("%s %s %s",$tt->{"date"},$Astro{ObsDate},$Astro{ObsTime});
       $ret .= " (".$tt->{"dst"}.")" if($Astro{ObsIsDST}==1);
       $ret .= sprintf(", %s %2d\n",$tt->{"timezone"},$Astro{ObsTimezone});
@@ -4032,7 +4058,7 @@ sub Get($@) {
         $tt->{"rise"},$Astro{SunRise},
         $tt->{"set"},$Astro{SunSet},
         $tt->{"transit"},$Astro{SunTransit});
-      $ret .= sprintf("%s %sh   %s %s h\n",$tt->{"hoursofsunlight"},$Astro{SunHrsVisible},$tt->{"hoursofnight"},$Astro{SunHrsInvisible});
+      $ret .= sprintf("%s %s h   %s %s h\n",$tt->{"hoursofsunlight"},$Astro{SunHrsVisible},$tt->{"hoursofnight"},$Astro{SunHrsInvisible});
       $ret .= sprintf("%s %s  -  %s\n",$tt->{"twilightcivil"},$Astro{CivilTwilightMorning},$Astro{CivilTwilightEvening});
       $ret .= sprintf("%s %s  -  %s\n",$tt->{"twilightnautic"},$Astro{NauticTwilightMorning},$Astro{NauticTwilightEvening});
       $ret .= sprintf("%s %s  -  %s\n",$tt->{"twilightastro"},$Astro{AstroTwilightMorning},$Astro{AstroTwilightEvening});
@@ -4063,6 +4089,10 @@ sub Get($@) {
 
      return $ret;
     }
+
+    no locale;
+    setlocale(LC_NUMERIC, "");
+    setlocale(LC_NUMERIC, $old_locale);
   }else {
     return "[FHEM::Astro::Get] $name with unknown argument $a->[0], choose one of ". 
     join(" ", map { defined($gets{$_})?"$_:$gets{$_}":$_ } sort keys %gets);
@@ -4227,6 +4257,9 @@ sub Get($@) {
                       The default value is 12 which corresponds to the definition of temporal hours.
                       In case the amount of hours during nighttime shall be different, they can be defined as
                       <code>&lt;dayHours&gt;:&lt;nightHours&gt;</code>. A value of '4' will enforce historic roman mode with implicit 12:4 settings but the Daytime to be reflected in latin notation. Defining a value of 12:4 directly will still show regular daytimes during daytime. Defining *:4 nighttime parts will always calculate Daytime in latin notation during nighttime, independant from daytime settings.</li>
+            <li><a name="Astro_timezone"></a>
+                <code>&lt;timezone&gt;</code>
+                <br />A timezone may be set to overwrite global and system settings. Format may depend on your local system implementation but is likely in the format similar to <code>Europe/Berlin</code>.</li>
             <li>Some definitions determining the observer position:<br/>
                 <ul>
                 <code>attr  &lt;name&gt;  longitude &lt;value&gt;</code><br/>
