@@ -4090,9 +4090,9 @@ sub Get($@) {
      return $ret;
     }
 
-    no locale;
     setlocale(LC_NUMERIC, "");
     setlocale(LC_NUMERIC, $old_locale);
+    no locale;
   }else {
     return "[FHEM::Astro::Get] $name with unknown argument $a->[0], choose one of ". 
     join(" ", map { defined($gets{$_})?"$_:$gets{$_}":$_ } sort keys %gets);
@@ -4335,6 +4335,7 @@ sub Get($@) {
         "POSIX": 0,
         "Time::HiRes": 0,
         "Time::Local": 0,
+        "locale": 0,
         "strict": 0,
         "warnings": 0
       },
