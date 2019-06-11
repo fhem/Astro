@@ -9,20 +9,6 @@
 # Program skeleton (with some errors) by Arnold Barmettler 
 # http://lexikon.astronomie.info/java/sunmoon/
 #
-# Seasonal (temporal/roman) hour calculation is based on description on Wikipedia
-# and was initially provided by Julian Pawlowski.
-# https://de.wikipedia.org/wiki/Temporale_Stunden
-# https://de.wikipedia.org/wiki/Tageszeit
-#
-# Seasonal hour naming is based on description about the day by "Nikolaus A. Bär"
-# and was initially provided by Julian Pawlowski.
-# http://www.nabkal.de/tag.html
-#
-# Estimation of the Phenological Season is based on data provided by "Deutscher Wetterdienst",
-#  in particular data about durations of the year 2017.
-#  It was initially provided by Julian Pawlowski.
-# https://www.dwd.de/DE/klimaumwelt/klimaueberwachung/phaenologie/produkte/phaenouhr/phaenouhr.html
-#
 #  $Id: 95_Astro.pm 19405 2019-05-19 08:50:54Z phenning $
 #
 ########################################################################################
@@ -81,16 +67,13 @@ my %gets = (
 my %attrs = (
     "altitude"    => undef,
     "disable"     => "1,0",
-    "earlyfall"   => undef,
-    "earlyspring" => undef,
     "horizon"     => undef,
     "interval"    => undef,
     "language"    => "EN,DE,ES,FR,IT,NL,PL",
     "latitude"    => undef,
+    "lc_numeric"  => "en_EN.UTF-8,de_DE.UTF-8,es_ES.UTF-8,fr_FR.UTF-8,it_IT.UTF-8,nl_NL.UTF-8,pl_PL.UTF-8",
     "longitude"   => undef,
-    "recomputeAt" => "multiple-strict,MoonRise,MoonSet,MoonTransit,NewDay,SeasonalHr,SunRise,SunSet,SunTransit,AstroTwilightEvening,AstroTwilightMorning,CivilTwilightEvening,CivilTwilightMorning,CustomTwilightEvening,CustomTwilightMorning",
-    "schedule"    => "multiple-strict,MoonPhaseS,MoonRise,MoonSet,MoonSign,MoonTransit,ObsDate,ObsIsDST,ObsMeteoSeason,ObsPhenoSeason,ObsSeason,ObsSeasonalHr,SunRise,SunSet,SunSign,SunTransit,AstroTwilightEvening,AstroTwilightMorning,CivilTwilightEvening,CivilTwilightMorning,NauticTwilightEvening,NauticTwilightMorning,CustomTwilightEvening,CustomTwilightMorning",
-    "seasonalHrs" => undef,
+    "recomputeAt" => "multiple-strict,MoonRise,MoonSet,MoonTransit,NewDay,SunRise,SunSet,SunTransit,AstroTwilightEvening,AstroTwilightMorning,CivilTwilightEvening,CivilTwilightMorning,CustomTwilightEvening,CustomTwilightMorning",
     "timezone"    => undef,
 );
 
@@ -111,7 +94,6 @@ our %transtable = (
         #--
         "coord"             => "Coordinates",
         "position"          => "Position",
-        "direction"         => "Direction",
         "longitude"         => "Longitude",
         "latitude"          => "Latitude",
         "altitude"          => "Height a.s.l.",
@@ -134,62 +116,20 @@ our %transtable = (
         "twilightnautic"    => "Nautical twilight",
         "twilightastro"     => "Astronomical twilight",
         "twilightcustom"    => "Custom twilight",
-        "duskcivil"         => "Civil dusk",
-        "dusknautic"        => "Nautic dusk",
-        "duskastro"         => "Astronomical dusk",
-        "duskcustom"        => "Custom dusk",
-        "dawncivil"         => "Civil dawn",
-        "dawnnautic"        => "Nautic dawn",
-        "dawnastro"         => "Astronomical dawn",
-        "dawncustom"        => "Custom dawn",
         "sign"              => "Zodiac sign",
         "dst"               => "daylight saving time",
-        "leapyear"          => "leap year",
         "hoursofsunlight"   => "Hours of sunlight",
         "hoursofnight"      => "Hours of night",
         "hoursofvisibility" => "Visibility",
 
         #--
-        "seasonalhour" => "Seasonal Hour",
-        "temporalhour" => "Temporal Hour",
-
-        #--
-        "dayphase"          => "Daytime",
-        "dusk"              => "Dusk",
-        "earlyevening"      => "Early evening",
-        "evening"           => "Evening",
-        "lateevening"       => "Late evening",
-        "earlynight"        => "Early night",
-        "beforemidnight"    => "Before midnight",
-        "midnight"          => "Midnight",
-        "aftermidnight"     => "After midnight",
-        "latenight"         => "Late night",
-        "cockcrow"          => "Cock-crow",
-        "firstmorninglight" => "First morning light",
-        "dawn"              => "Dawn",
-        "breakingdawn"      => "Breaking dawn",
-        "earlymorning"      => "Early morning",
-        "morning"           => "Morning",
-        "earlyforenoon"     => "Early forenoon",
-        "forenoon"          => "Forenoon",
-        "lateforenoon"      => "Late forenoon",
-        "noon"              => "Noon",
-        "earlyafternoon"    => "Early afternoon",
-        "afternoon"         => "Afternoon",
-        "lateafternoon"     => "Late afternoon",
-        "firstdusk"         => "First dusk",
-
-        #--
         "today"         => "Today",
         "tomorrow"      => "Tomorrow",
-        "week"          => "Week",
         "weekday"       => "Day of Week",
         "date"          => "Date",
         "jdate"         => "Julian date",
         "dayofyear"     => "day of year",
         "days"          => "days",
-        "daysremaining" => "days remaining",
-        "dayremaining"  => "day remaining",
         "timezone"      => "Time Zone",
         "lmst"          => "Local Sidereal Time",
 
@@ -208,21 +148,6 @@ our %transtable = (
         "summer" => "Summer",
         "fall"   => "Fall",
         "winter" => "Winter",
-
-        #--
-        "metseason" => "Meteorological Season",
-
-        #--
-        "phenseason"  => "Phenological Season",
-        "earlyspring" => "Early Spring",
-        "firstspring" => "First Spring",
-        "fullspring"  => "Full Spring",
-        "earlysummer" => "Early Summer",
-        "midsummer"   => "Midsummer",
-        "latesummer"  => "Late Summer",
-        "earlyfall"   => "Early Fall",
-        "fullfall"    => "Full Fall",
-        "latefall"    => "Late Fall",
 
         #--
         "aries"       => "Ram",
@@ -252,24 +177,6 @@ our %transtable = (
         "waningmoon"     => "Waning Moon",
         "lastquarter"    => "Last Quarter",
         "waningcrescent" => "Waning Crescent",
-
-        #--
-        "cpn"   => [ "North",           "N" ],
-        "cpnne" => [ "North-Northeast", "NNE" ],
-        "cpne"  => [ "North-East",      "NE" ],
-        "cpene" => [ "East-Northeast",  "ENE" ],
-        "cpe"   => [ "East",            "E" ],
-        "cpese" => [ "East-Southeast",  "ESE" ],
-        "cpse"  => [ "Southeast",       "SE" ],
-        "cpsse" => [ "South-Southeast", "SSE" ],
-        "cps"   => [ "South",           "S" ],
-        "cpssw" => [ "South-Southwest", "SSW" ],
-        "cpsw"  => [ "Southwest",       "SW" ],
-        "cpwsw" => [ "West-Southwest",  "WSW" ],
-        "cpw"   => [ "West",            "W" ],
-        "cpwnw" => [ "West-Northwest",  "WNW" ],
-        "cpnw"  => [ "Northwest",       "NW" ],
-        "cpnnw" => [ "North-Northwest", "NNW" ],
     },
 
     DE => {
@@ -284,7 +191,6 @@ our %transtable = (
         #--
         "coord"             => "Koordinaten",
         "position"          => "Position",
-        "direction"         => "Richtung",
         "longitude"         => "Länge",
         "latitude"          => "Breite",
         "altitude"          => "Höhe ü. NHN",
@@ -308,62 +214,20 @@ our %transtable = (
         "twilightnautic"    => "Nautische Dämmerung",
         "twilightastro"     => "Astronomische Dämmerung",
         "twilightcustom"    => "Konfigurierte Dämmerung",
-        "duskcivil"         => "Bürgerliche Abenddämmerung",
-        "dusknautic"        => "Nautische Abenddämmerung",
-        "duskastro"         => "Astronomische Abenddämmerung",
-        "duskcustom"        => "Konfigurierte Abenddämmerung",
-        "dawncivil"         => "Bürgerliche Morgendämmerung",
-        "dawnnautic"        => "Nautische Morgendämmerung",
-        "dawnastro"         => "Astronomische Morgendämmerung",
-        "dawncustom"        => "Konfigurierte Morgendämmerung",
         "sign"              => "Tierkreiszeichen",
         "dst"               => "Sommerzeit",
-        "leapyear"          => "Schaltjahr",
         "hoursofsunlight"   => "Tagesstunden",
         "hoursofnight"      => "Nachtstunden",
         "hoursofvisibility" => "Sichtbarkeit",
 
         #--
-        "seasonalhour" => "Saisonale Stunde",
-        "temporalhour" => "Temporale Stunde",
-
-        #--
-        "dayphase"          => "Tageszeit",
-        "dusk"              => "Abenddämmerung",
-        "earlyevening"      => "früher Abend",
-        "evening"           => "Abend",
-        "lateevening"       => "Später Abend",
-        "earlynight"        => "Frühe Nacht",
-        "beforemidnight"    => "Vor-Mitternacht",
-        "midnight"          => "Mitternacht",
-        "aftermidnight"     => "Nach-Mitternacht",
-        "latenight"         => "Späte Nacht",
-        "cockcrow"          => "Hahnenschrei",
-        "firstmorninglight" => "Erstes Morgenlicht",
-        "dawn"              => "Morgendämmerung",
-        "breakingdawn"      => "Tagesanbruch",
-        "earlymorning"      => "Früher Morgen",
-        "morning"           => "Morgen",
-        "earlyforenoon"     => "Früher Vormittag",
-        "forenoon"          => "Vormittag",
-        "lateforenoon"      => "Später Vormittag",
-        "noon"              => "Mittag",
-        "earlyafternoon"    => "Früher Nachmittag",
-        "afternoon"         => "Nachmittag",
-        "lateafternoon"     => "Später Nachmittag",
-        "firstdusk"         => "Erste Dämmerung",
-
-        #--
         "today"         => "Heute",
         "tomorrow"      => "Morgen",
-        "week"          => "Woche",
         "weekday"       => "Wochentag",
         "date"          => "Datum",
         "jdate"         => "Julianisches Datum",
         "dayofyear"     => "Tag d. Jahres",
         "days"          => "Tage",
-        "daysremaining" => "Tage verbleibend",
-        "dayremaining"  => "Tag verbleibend",
         "timezone"      => "Zeitzone",
         "lmst"          => "Lokale Sternzeit",
 
@@ -382,22 +246,6 @@ our %transtable = (
         "summer" => "Sommer",
         "fall"   => "Herbst",
         "winter" => "Winter",
-
-        #--
-        "metseason" => "Meteorologische Jahreszeit",
-
-        #--
-        "phenseason"  => "Phänologische Jahreszeit",
-        "earlyspring" => "Vorfrühling",
-        "firstspring" => "Erstfrühling",
-        "fullspring"  => "Vollfrühling",
-        "earlysummer" => "Frühsommer",
-        "midsummer"   => "Hochsommer",
-        "latesummer"  => "Spätsommer",
-        "earlyfall"   => "Frühherbst",
-        "fullfall"    => "Vollherbst",
-        ,
-        "latefall" => "Spätherbst",
 
         #--
         "aries"       => "Widder",
@@ -427,24 +275,6 @@ our %transtable = (
         "waningmoon"     => "Abnehmender Mond",
         "lastquarter"    => "Letztes Viertel",
         "waningcrescent" => "Abnehmende Sichel",
-
-        #--
-        "cpn"   => [ "Norden",        "N" ],
-        "cpnne" => [ "Nord-Nordost",  "NNO" ],
-        "cpne"  => [ "Nord-Ost",      "NO" ],
-        "cpene" => [ "Ost-Nordost",   "ONO" ],
-        "cpe"   => [ "Ost",           "O" ],
-        "cpese" => [ "Ost-Südost",    "OSO" ],
-        "cpse"  => [ "Südost",        "SO" ],
-        "cpsse" => [ "Süd-Südost",    "SSO" ],
-        "cps"   => [ "Süd",           "S" ],
-        "cpssw" => [ "Süd-Südwest",   "SSW" ],
-        "cpsw"  => [ "Südwest",       "SW" ],
-        "cpwsw" => [ "West-Südwest",  "WSW" ],
-        "cpw"   => [ "West",          "W" ],
-        "cpwnw" => [ "West-Nordwest", "WNW" ],
-        "cpnw"  => [ "Nordwest",      "NW" ],
-        "cpnnw" => [ "Nord-Nordwest", "NNW" ],
     },
 
     ES => {
@@ -459,7 +289,6 @@ our %transtable = (
         #--
         "coord"             => "Coordenadas",
         "position"          => "Posición",
-        "direction"         => "Dirección",
         "longitude"         => "Longitud",
         "latitude"          => "Latitud",
         "altitude"          => "Altura sobre el mar",
@@ -482,62 +311,20 @@ our %transtable = (
         "twilightnautic"    => "Crepúsculo náutico",
         "twilightastro"     => "Crepúsculo astronómico",
         "twilightcustom"    => "Crepúsculo personalizado",
-        "duskcivil"         => "Oscuridad civil",
-        "dusknautic"        => "Oscuridad náutico",
-        "duskastro"         => "Oscuridad astronómico",
-        "duskcustom"        => "Oscuridad personalizado",
-        "dawncivil"         => "Amanecer civil",
-        "dawnnautic"        => "Amanecer náutico",
-        "dawnastro"         => "Amanecer astronómico",
-        "dawncustom"        => "Amanecer personalizado",
         "sign"              => "Signo del zodiaco",
         "dst"               => "horario de verano",
-        "leapyear"          => "año bisiesto",
         "hoursofsunlight"   => "Horas de luz solar",
         "hoursofnight"      => "Horas de la noche",
         "hoursofvisibility" => "Visibilidad",
 
         #--
-        "seasonalhour" => "Hora Estacional",
-        "temporalhour" => "Hora Temporal",
-
-        #--
-        "dayphase"          => "Durante el día",
-        "dusk"              => "Oscuridad",
-        "earlyevening"      => "Atardecer temprano",
-        "evening"           => "Nocturno",
-        "lateevening"       => "Tarde",
-        "earlynight"        => "Madrugada",
-        "beforemidnight"    => "Antes de medianoche",
-        "midnight"          => "Medianoche",
-        "aftermidnight"     => "Después de medianoche",
-        "latenight"         => "Noche tardía",
-        "cockcrow"          => "Canto al gallo",
-        "firstmorninglight" => "Primera luz de la mañana",
-        "dawn"              => "Amanecer",
-        "breakingdawn"      => "Rotura amanecer",
-        "earlymorning"      => "Temprano en la mañana",
-        "morning"           => "Mañana",
-        "earlyforenoon"     => "Temprano antes de mediodía",
-        "forenoon"          => "Antes de mediodía",
-        "lateforenoon"      => "Tarde antes de mediodía",
-        "noon"              => "Mediodía",
-        "earlyafternoon"    => "Temprano después de mediodía",
-        "afternoon"         => "Después de mediodía",
-        "lateafternoon"     => "Tarde después de mediodía",
-        "firstdusk"         => "Temprano oscuridad",
-
-        #--
         "today"         => "Hoy",
         "tomorrow"      => "Mañana",
-        "week"          => "Semana",
         "weekday"       => "Dia de la semana",
         "date"          => "Fecha",
         "jdate"         => "Fecha de Julian",
         "dayofyear"     => "Día del año",
         "days"          => "Días",
-        "daysremaining" => "Días restantes",
-        "dayremaining"  => "Día restante",
         "timezone"      => "Zona horaria",
         "lmst"          => "Hora sideral local",
 
@@ -556,21 +343,6 @@ our %transtable = (
         "summer" => "Verano",
         "fall"   => "Otoño",
         "winter" => "Invierno",
-
-        #--
-        "metseason" => "Temporada Meteorológica",
-
-        #--
-        "phenseason"  => "Temporada Fenologica",
-        "earlyspring" => "Inicio de la primavera",
-        "firstspring" => "Primera primavera",
-        "fullspring"  => "Primavera completa",
-        "earlysummer" => "Comienzo del verano",
-        "midsummer"   => "Pleno verano",
-        "latesummer"  => "El verano pasado",
-        "earlyfall"   => "Inicio del otoño",
-        "fullfall"    => "Otoño completo",
-        "latefall"    => "Finales de otoño",
 
         #--
         "aries"       => "Aries",
@@ -600,24 +372,6 @@ our %transtable = (
         "waningmoon"     => "Luna menguante",
         "lastquarter"    => "Último cuarto",
         "waningcrescent" => "Creciente menguante",
-
-        #--
-        "cpn"   => [ "Norte",          "N" ],
-        "cpnne" => [ "Norte-Noreste",  "NNE" ],
-        "cpne"  => [ "Noreste",        "NE" ],
-        "cpene" => [ "Este-Noreste",   "ENE" ],
-        "cpe"   => [ "Este",           "E" ],
-        "cpese" => [ "Este-Sureste",   "ESE" ],
-        "cpse"  => [ "Sureste",        "SE" ],
-        "cpsse" => [ "Sur-Sureste",    "SSE" ],
-        "cps"   => [ "Sur",            "S" ],
-        "cpssw" => [ "Sudoeste",       "SDO" ],
-        "cpsw"  => [ "Sur-Oeste",      "SO" ],
-        "cpwsw" => [ "Oeste-Suroeste", "OSO" ],
-        "cpw"   => [ "Oeste",          "O" ],
-        "cpwnw" => [ "Oeste-Noroeste", "ONO" ],
-        "cpnw"  => [ "Noroeste",       "NO" ],
-        "cpnnw" => [ "Norte-Noroeste", "NNE" ],
     },
 
     FR => {
@@ -632,7 +386,6 @@ our %transtable = (
         #--
         "coord"             => "Coordonnées",
         "position"          => "Position",
-        "direction"         => "Direction",
         "longitude"         => "Longitude",
         "latitude"          => "Latitude",
         "altitude"          => "Hauteur au dessus de la mer",
@@ -655,62 +408,20 @@ our %transtable = (
         "twilightnautic"    => "Crépuscule nautique",
         "twilightastro"     => "Crépuscule astronomique",
         "twilightcustom"    => "Crépuscule personnalisé",
-        "duskcivil"         => "Crépuscule civil",
-        "dusknautic"        => "Crépuscule nautique",
-        "duskastro"         => "Crépuscule astronomique",
-        "duskcustom"        => "Crépuscule personnalisé",
-        "dawncivil"         => "Aube civil",
-        "dawnnautic"        => "Aube nautique",
-        "dawnastro"         => "Aube astronomique",
-        "dawncustom"        => "Aube personnalisé",
         "sign"              => "Signe du zodiaque",
         "dst"               => "heure d'été",
-        "leapyear"          => "année bissextile",
         "hoursofsunlight"   => "Heures de soleil",
         "hoursofnight"      => "Heures de la nuit",
         "hoursofvisibility" => "Visibilité",
 
         #--
-        "seasonalhour" => "Heure de Saison",
-        "temporalhour" => "Heure Temporelle",
-
-        #--
-        "dayphase"          => "Heure du jour",
-        "dusk"              => "Crépuscule",
-        "earlyevening"      => "Début de soirée",
-        "evening"           => "Soir",
-        "lateevening"       => "Fin de soirée",
-        "earlynight"        => "Nuit tombante",
-        "beforemidnight"    => "Avant minuit",
-        "midnight"          => "Minuit",
-        "aftermidnight"     => "Après minuit",
-        "latenight"         => "Tard dans la nuit",
-        "cockcrow"          => "Coq de bruyère",
-        "firstmorninglight" => "Première lueur du matin",
-        "dawn"              => "Aube",
-        "breakingdawn"      => "Aube naissante",
-        "earlymorning"      => "Tôt le matin",
-        "morning"           => "Matin",
-        "earlyforenoon"     => "Matinée matinale",
-        "forenoon"          => "Matinée",
-        "lateforenoon"      => "Matinée tardive",
-        "noon"              => "Midi",
-        "earlyafternoon"    => "Début d'après-midi",
-        "afternoon"         => "Après-midi",
-        "lateafternoon"     => "Fin d'après-midi",
-        "firstdusk"         => "Premier crépuscule",
-
-        #--
         "today"         => "Aujourd'hui",
         "tomorrow"      => "Demain",
-        "week"          => "Semaine",
         "weekday"       => "Jour de la semaine",
         "date"          => "Date",
         "jdate"         => "Date de Julien",
         "dayofyear"     => "jour de l'année",
         "days"          => "jours",
-        "daysremaining" => "jours restant",
-        "dayremaining"  => "jour restant",
         "timezone"      => "Fuseau horaire",
         "lmst"          => "Heure sidérale locale",
 
@@ -729,21 +440,6 @@ our %transtable = (
         "summer" => "Été",
         "fall"   => "Automne",
         "winter" => "Hiver",
-
-        #--
-        "metseason" => "Saison Météorologique",
-
-        #--
-        "phenseason"  => "Saison Phénologique",
-        "earlyspring" => "Avant du printemps",
-        "firstspring" => "Début du printemps",
-        "fullspring"  => "Printemps",
-        "earlysummer" => "Avant de l'été",
-        "midsummer"   => "Milieu de l'été",
-        "latesummer"  => "Fin de l'été",
-        "earlyfall"   => "Avant de l'automne",
-        "fullfall"    => "Automne",
-        "latefall"    => "Fin de l'automne",
 
         #--
         "aries"       => "bélier",
@@ -773,24 +469,6 @@ our %transtable = (
         "waningmoon"     => "Lune décroissante",
         "lastquarter"    => "Le dernier quart",
         "waningcrescent" => "Croissant décroissant",
-
-        #--
-        "cpn"   => [ "Nord",             "N" ],
-        "cpnne" => [ "Nord-Nord-Est",    "NNE" ],
-        "cpne"  => [ "Nord-Est",         "NE" ],
-        "cpene" => [ "Est-Nord-Est",     "ENE" ],
-        "cpe"   => [ "Est",              "E" ],
-        "cpese" => [ "Est-Sud-Est",      "ESE" ],
-        "cpse"  => [ "Sud-Est",          "SE" ],
-        "cpsse" => [ "Sud-Sud-Est",      "SSE" ],
-        "cps"   => [ "Sud",              "S" ],
-        "cpssw" => [ "Sud-Sud-Ouest",    "SSW" ],
-        "cpsw"  => [ "Sud-Ouest",        "SW" ],
-        "cpwsw" => [ "Ouest-Sud-Ouest",  "OSO" ],
-        "cpw"   => [ "Ouest",            "O" ],
-        "cpwnw" => [ "Ouest-Nord-Ouest", "ONO" ],
-        "cpnw"  => [ "Nord-Ouest",       "NO" ],
-        "cpnnw" => [ "Nord-Nord-Ouest",  "NNO" ],
     },
 
     IT => {
@@ -805,7 +483,6 @@ our %transtable = (
         #--
         "coord"             => "Coordinate",
         "position"          => "Posizione",
-        "direction"         => "Direzione",
         "longitude"         => "Longitudine",
         "latitude"          => "Latitudine",
         "altitude"          => "Altezza sopra il mare",
@@ -828,62 +505,20 @@ our %transtable = (
         "twilightnautic"    => "Crepuscolo nautico",
         "twilightastro"     => "Crepuscolo astronomico",
         "twilightcustom"    => "Crepuscolo personalizzato",
-        "duskcivil"         => "Crepuscolo civile",
-        "dusknautic"        => "Crepuscolo nautico",
-        "duskastro"         => "Crepuscolo astronomico",
-        "duskcustom"        => "Crepuscolo personalizzato",
-        "dawncivil"         => "Alba civile",
-        "dawnnautic"        => "Alba nautico",
-        "dawnastro"         => "Alba astronomico",
-        "dawncustom"        => "Alba personalizzato",
         "sign"              => "Segno zodiacale",
         "dst"               => "ora legale",
-        "leapyear"          => "anno bisestile",
         "hoursofsunlight"   => "Ore di luce solare",
         "hoursofnight"      => "Ore della notte",
         "hoursofvisibility" => "Visibilità",
 
         #--
-        "seasonalhour" => "Ora di Stagione",
-        "temporalhour" => "Ora Temporale",
-
-        #--
-        "dayphase"          => "Tempo di giorno",
-        "dusk"              => "Crepuscolo",
-        "earlyevening"      => "Sera presto",
-        "evening"           => "Serata",
-        "lateevening"       => "Tarda serata",
-        "earlynight"        => "Notte presto",
-        "beforemidnight"    => "Prima mezzanotte",
-        "midnight"          => "Mezzanotte",
-        "aftermidnight"     => "Dopo mezzanotte",
-        "latenight"         => "Tarda notte",
-        "cockcrow"          => "Gallo corvo",
-        "firstmorninglight" => "Prima luce del mattino",
-        "dawn"              => "Alba",
-        "breakingdawn"      => "Dopo l'alba",
-        "earlymorning"      => "Mattina presto",
-        "morning"           => "Mattina",
-        "earlyforenoon"     => "Prima mattinata",
-        "forenoon"          => "Mattinata",
-        "lateforenoon"      => "Tarda mattinata",
-        "noon"              => "Mezzogiorno",
-        "earlyafternoon"    => "Primo pomeriggio",
-        "afternoon"         => "Pomeriggio",
-        "lateafternoon"     => "Tardo pomeriggio",
-        "firstdusk"         => "Primo crepuscolo",
-
-        #--
         "today"         => "Oggi",
         "tomorrow"      => "Domani",
-        "week"          => "Settimana",
         "weekday"       => "Giorno della settimana",
         "date"          => "Data",
         "jdate"         => "Data giuliana",
         "dayofyear"     => "giorno dell'anno",
         "days"          => "giorni",
-        "daysremaining" => "giorni rimanenti",
-        "dayremaining"  => "giorno rimanente",
         "timezone"      => "Fuso orario",
         "lmst"          => "Tempo siderale locale",
 
@@ -902,21 +537,6 @@ our %transtable = (
         "summer" => "Estate",
         "fall"   => "Autunno",
         "winter" => "Inverno",
-
-        #--
-        "metseason" => "Stagione Meteorologica",
-
-        #--
-        "phenseason"  => "Stagione Fenologica",
-        "earlyspring" => "Inizio primavera",
-        "firstspring" => "Prima primavera",
-        "fullspring"  => "Piena primavera",
-        "earlysummer" => "Inizio estate",
-        "midsummer"   => "Mezza estate",
-        "latesummer"  => "Estate inoltrata",
-        "earlyfall"   => "Inizio autunno",
-        "fullfall"    => "Piena caduta",
-        "latefall"    => "Tardo autunno",
 
         #--
         "aries"       => "Ariete",
@@ -946,24 +566,6 @@ our %transtable = (
         "waningmoon"     => "Luna calante",
         "lastquarter"    => "Ultimo quarto",
         "waningcrescent" => "Pericolo crescente",
-
-        #--
-        "cpn"   => [ "Nord",             "N" ],
-        "cpnne" => [ "Nord-Nord-Est",    "NNE" ],
-        "cpne"  => [ "Nord-Est",         "NE" ],
-        "cpene" => [ "Est-Nord-Est",     "ENE" ],
-        "cpe"   => [ "Est",              "E" ],
-        "cpese" => [ "Est-Sud-Est",      "ESE" ],
-        "cpse"  => [ "Sud-Est",          "SE" ],
-        "cpsse" => [ "Sud-Sud-Est",      "SSE" ],
-        "cps"   => [ "Sud",              "S" ],
-        "cpssw" => [ "Sud-Sud-Ovest",    "SSO" ],
-        "cpsw"  => [ "Sud-Ovest",        "SO" ],
-        "cpwsw" => [ "Ovest-Sud-Ovest",  "OSO" ],
-        "cpw"   => [ "Ovest",            "O" ],
-        "cpwnw" => [ "Ovest-Nord-Ovest", "ONO" ],
-        "cpnw"  => [ "Nord-Ovest",       "NO" ],
-        "cpnnw" => [ "Nord-Nord-Ovest",  "NNO" ],
     },
 
     NL => {
@@ -978,7 +580,6 @@ our %transtable = (
         #--
         "coord"             => "Coördinaten",
         "position"          => "Positie",
-        "direction"         => "Richting",
         "longitude"         => "Lengtegraad",
         "latitude"          => "Breedtegraad",
         "altitude"          => "Hoogte b. Zee",
@@ -1001,62 +602,20 @@ our %transtable = (
         "twilightnautic"    => "Nautische Schemering",
         "twilightastro"     => "Astronomische Schemering",
         "twilightcustom"    => "Aangepaste Schemering",
-        "duskcivil"         => "Burgerlijke Schemering",
-        "dusknautic"        => "Nautische Schemering",
-        "duskastro"         => "Astronomische Schemering",
-        "duskcustom"        => "Aangepaste Schemering",
-        "dawncivil"         => "Burgerlijke Dageraad",
-        "dawnnautic"        => "Nautische Dageraad",
-        "dawnastro"         => "Astronomische Dageraad",
-        "dawncustom"        => "Aangepaste Dageraad",
         "sign"              => "Sterrenbeeld",
         "dst"               => "Zomertijd",
-        "leapyear"          => "Schrikkeljaar",
         "hoursofsunlight"   => "Dagen Uur",
         "hoursofnight"      => "Uren van de Nacht",
         "hoursofvisibility" => "Zichtbaarheid",
 
         #--
-        "seasonalhour" => "Seizoensgebonden Uur",
-        "temporalhour" => "Tijdelijk Uur",
-
-        #--
-        "dayphase"          => "Dagtijd",
-        "dusk"              => "Schemering",
-        "earlyevening"      => "Vroege Avond",
-        "evening"           => "Avond",
-        "lateevening"       => "Late Avond",
-        "earlynight"        => "Vroege Nacht",
-        "beforemidnight"    => "Voor Middernacht",
-        "midnight"          => "Middernacht",
-        "aftermidnight"     => "Na Middernacht",
-        "latenight"         => "Late Nacht",
-        "cockcrow"          => "Hanegekraai",
-        "firstmorninglight" => "Eerste Ochtendlicht",
-        "dawn"              => "Dageraad",
-        "breakingdawn"      => "Ochtendgloren",
-        "earlymorning"      => "Vroege Ochtend",
-        "morning"           => "Ochtend",
-        "earlyforenoon"     => "Vroeg in de Voormiddag",
-        "forenoon"          => "Voormiddag",
-        "lateforenoon"      => "Late Voormiddag",
-        "noon"              => "Middag",
-        "earlyafternoon"    => "Vroege Namiddag",
-        "afternoon"         => "Namiddag",
-        "lateafternoon"     => "Late Namiddag",
-        "firstdusk"         => "Eerste Schemering",
-
-        #--
         "today"         => "Vandaag",
         "tomorrow"      => "Morgen",
-        "week"          => "Week",
         "weekday"       => "Dag van de Week",
         "date"          => "Datum",
         "jdate"         => "Juliaanse Datum",
         "dayofyear"     => "Dag van het Jaar",
         "days"          => "Dagen",
-        "daysremaining" => "resterende Dagen",
-        "dayremaining"  => "resterende Dag",
         "timezone"      => "Tijdzone",
         "lmst"          => "Lokale Sterrentijd",
 
@@ -1075,21 +634,6 @@ our %transtable = (
         "summer" => "Zomer",
         "fall"   => "Herfst",
         "winter" => "Winter",
-
-        #--
-        "metseason" => "Meteorologisch Seizoen",
-
-        #--
-        "phenseason"  => "Fenologisch Seizoen",
-        "earlyspring" => "Vroeg Voorjaar",
-        "firstspring" => "Eerste Voorjaar",
-        "fullspring"  => "Voorjaar",
-        "earlysummer" => "Vroeg Zomer",
-        "midsummer"   => "Zomer",
-        "latesummer"  => "Laat Zomer",
-        "earlyfall"   => "Vroeg Herfst",
-        "fullfall"    => "Herfst",
-        "latefall"    => "Laat Herfst",
 
         #--
         "aries"       => "Ram",
@@ -1119,24 +663,6 @@ our %transtable = (
         "waningmoon"     => "Afnemende Maan",
         "lastquarter"    => "Het laatste Kwartier",
         "waningcrescent" => "Afnemende halve Maan",
-
-        #--
-        "cpn"   => [ "Noorden",           "N" ],
-        "cpnne" => [ "Noord-Noordoosten", "NNO" ],
-        "cpne"  => [ "Noordoosten",       "NO" ],
-        "cpene" => [ "Oost-Noordoost",    "ONO" ],
-        "cpe"   => [ "Oosten",            "O" ],
-        "cpese" => [ "Oost-Zuidoost",     "OZO" ],
-        "cpse"  => [ "Zuidoosten",        "ZO" ],
-        "cpsse" => [ "Zuid-Zuidoost",     "ZZO" ],
-        "cps"   => [ "Zuiden",            "Z" ],
-        "cpssw" => [ "Zuid-Zuidwest",     "ZZW" ],
-        "cpsw"  => [ "Zuidwest",          "ZW" ],
-        "cpwsw" => [ "West-Zuidwest",     "WZW" ],
-        "cpw"   => [ "West",              "W" ],
-        "cpwnw" => [ "West-Noord-West",   "WNW" ],
-        "cpnw"  => [ "Noord-West",        "NW" ],
-        "cpnnw" => [ "Noord-Noord-West",  "NNW" ],
     },
 
     PL => {
@@ -1151,7 +677,6 @@ our %transtable = (
         #--
         "coord"             => "Współrzędne",
         "position"          => "Pozycja",
-        "direction"         => "Kierunek",
         "longitude"         => "Długość",
         "latitude"          => "Szerokość",
         "altitude"          => "Wysokość nad morzem",
@@ -1174,62 +699,20 @@ our %transtable = (
         "twilightnautic"    => "Zmierzch morski",
         "twilightastro"     => "Zmierzch astronomiczny",
         "twilightcustom"    => "Zmierzch niestandardowy",
-        "duskcivil"         => "Zmierzch cywilny",
-        "dusknautic"        => "Zmierzch morski",
-        "duskastro"         => "Zmierzch astronomiczny",
-        "duskcustom"        => "Zmierzch niestandardowy",
-        "dawncivil"         => "świt cywilny",
-        "dawnnautic"        => "świt morski",
-        "dawnastro"         => "świt astronomiczny",
-        "dawncustom"        => "świt niestandardowy",
         "sign"              => "Znak zodiaku",
         "dst"               => "Czas letni",
-        "leapyear"          => "rok przestępny",
         "hoursofsunlight"   => "Godziny światła słonecznego",
         "hoursofnight"      => "Godziny nocy",
         "hoursofvisibility" => "Widoczność",
 
         #--
-        "seasonalhour" => "Godzina Sezonowa",
-        "temporalhour" => "Czasowa Godzina",
-
-        #--
-        "dayphase"          => "Pora dnia",
-        "dusk"              => "Zmierzch",
-        "earlyevening"      => "Wczesnym wieczorem",
-        "evening"           => "Wieczór",
-        "lateevening"       => "Późny wieczór",
-        "earlynight"        => "Wczesna noc",
-        "beforemidnight"    => "Przed północą",
-        "midnight"          => "Północ",
-        "aftermidnight"     => "Po północy",
-        "latenight"         => "Późna noc",
-        "cockcrow"          => "Pianie koguta",
-        "firstmorninglight" => "Pierwsze światło poranne",
-        "dawn"              => "świt",
-        "breakingdawn"      => "łamanie świtu",
-        "earlymorning"      => "Wcześnie rano",
-        "morning"           => "Ranek",
-        "earlyforenoon"     => "Wczesne przedpołudnie",
-        "forenoon"          => "Przedpołudnie",
-        "lateforenoon"      => "Późne przedpołudnie",
-        "noon"              => "Południe",
-        "earlyafternoon"    => "Wczesne popołudnie",
-        "afternoon"         => "Popołudnie",
-        "lateafternoon"     => "Późne popołudnie",
-        "firstdusk"         => "Pierwszy zmierzch",
-
-        #--
         "today"         => "Dzisiaj",
         "tomorrow"      => "Jutro",
-        "week"          => "Tydzień",
         "weekday"       => "Dzień powszedni",
         "date"          => "Data",
         "jdate"         => "Juliańska data",
         "dayofyear"     => "dzień roku",
         "days"          => "dni",
-        "daysremaining" => "pozostało dni",
-        "dayremaining"  => "pozostały dzień",
         "timezone"      => "Strefa czasowa",
         "lmst"          => "Lokalny czas gwiazdowy",
 
@@ -1248,21 +731,6 @@ our %transtable = (
         "summer" => "Lato",
         "fall"   => "Jesień",
         "winter" => "Zima",
-
-        #--
-        "metseason" => "Sezon Meteorologiczny",
-
-        #--
-        "phenseason"  => "Sezon Fenologiczny",
-        "earlyspring" => "Wczesna wiosna",
-        "firstspring" => "Pierwsza wiosna",
-        "fullspring"  => "Pełna wiosna",
-        "earlysummer" => "Wczesne lato",
-        "midsummer"   => "Połowa lata",
-        "latesummer"  => "Późne lato",
-        "earlyfall"   => "Wczesna jesień",
-        "fullfall"    => "Pełna jesień",
-        "latefall"    => "Późną jesienią",
 
         #--
         "aries"       => "Baran",
@@ -1292,109 +760,7 @@ our %transtable = (
         "waningmoon"     => "Zmniejszający się księżyc",
         "lastquarter"    => "Ostatni kwartał",
         "waningcrescent" => "Zwiększający się księżyc",
-
-        #--
-        "cpn"   => [ "Północ",                        "N" ],
-        "cpnne" => [ "Północny-Północny-Wschód",      "NNE" ],
-        "cpne"  => [ "Północny-Wschód",               "NE" ],
-        "cpene" => [ "Wschód-Północny-Wschód",        "ENE" ],
-        "cpe"   => [ "Wschód",                        "E" ],
-        "cpese" => [ "Wschód-Południowy-Wschód",      "ESE" ],
-        "cpse"  => [ "Południowy-Południowy-Wschód",  "SE" ],
-        "cpsse" => [ "Południowy-Wschód",             "SSE" ],
-        "cps"   => [ "Południe",                      "S" ],
-        "cpssw" => [ "Południowo-Południowy-Zachód",  "SSW" ],
-        "cpsw"  => [ "Południowy-Zachód",             "SW" ],
-        "cpwsw" => [ "Zachód-Południowy-Zachód",      "WSW" ],
-        "cpw"   => [ "Zachód",                        "W" ],
-        "cpwnw" => [ "Zachód-Północny-Zachód",        "WNW" ],
-        "cpnw"  => [ "Północny-Zachód",               "NW" ],
-        "cpnnw" => [ "Północno-Północny-Zachód",      "NNW" ],
     }
-);
-
-our %readingsLabel = (
-    "AstroTwilightEvening"  => [ "duskastro",  undef ],
-    "AstroTwilightMorning"  => [ "dawnastro",  undef ],
-    "CivilTwilightEvening"  => [ "duskcivil",  undef ],
-    "CivilTwilightMorning"  => [ "dawncivil",  undef ],
-    "CustomTwilightEvening" => [ "duskcustom", undef ],
-    "CustomTwilightMorning" => [ "dawncustom", undef ],
-
-    #--
-    "MoonAge"               => [ "age",               "°" ],
-    "MoonAlt"               => [ "alt",               "°" ],
-    "MoonAz"                => [ "az",                "°" ],
-    "MoonCompass"           => [ "direction",         undef ],
-    "MoonCompassI"          => [ "direction",         undef ],
-    "MoonCompassS"          => [ "direction",         undef ],
-    "MoonDec"               => [ "dec",               "°" ],
-    "MoonDiameter"          => [ "diameter",          "'" ],
-    "MoonDistance"          => [ "distance toce",     "km" ],
-    "MoonDistanceObserver"  => [ "distance toobs",    "km" ],
-    "MoonHrsVisible"        => [ "hoursofvisibility", "h" ],
-    "MoonLat"               => [ "latitude",          "°" ],
-    "MoonLon"               => [ "longitude",         "°" ],
-    "MoonPhaseI"            => [ "phase",             undef ],
-    "MoonPhaseN"            => [ "progress",          "%" ],
-    "MoonPhaseS"            => [ "phase",             undef ],
-    "MoonRa"                => [ "ra",                "h" ],
-    "MoonRise"              => [ "rise",              undef ],
-    "MoonSet"               => [ "set",               undef ],
-    "MoonSign"              => [ "sign",              undef ],
-    "MoonTransit"           => [ "transit",           undef ],
-    "NauticTwilightEvening" => [ "dusknautic",        undef ],
-    "NauticTwilightMorning" => [ "dawnnautic",        undef ],
-
-    #--
-    "ObsAlt"           => [ "altitude",    "m" ],
-    "ObsDate"          => [ "date",        undef ],
-    "ObsDayofyear"     => [ "dayofyear",   "day", 1 ],
-    "ObsDaytime"       => [ "dayphase",    undef ],
-    "ObsDaytimeN"      => [ "dayphase",    undef ],
-    "ObsIsDST"         => [ "dst",         undef ],
-    "ObsIsLeapyear"    => [ "leapyear",    undef ],
-    "ObsJD"            => [ "jdate",       undef ],
-    "ObsLat"           => [ "latitude",    "°" ],
-    "ObsLMST"          => [ "lmst",        undef ],
-    "ObsLon"           => [ "longitude",   "°" ],
-    "ObsMeteoSeason"   => [ "metseason",   undef ],
-    "ObsMeteoSeasonN"  => [ "metseason",   undef ],
-    "ObsMonthProgress" => [ "progress",    "%" ],
-    "ObsMonthRemainD"  => [ "remaining",   "1:day|days", 1 ],
-    "ObsPhenoSeason"   => [ "phenoseason", undef ],
-    "ObsPhenoSeasonN"  => [ "phenoseason", undef ],
-    "ObsSeason"        => [ "season",      undef ],
-    "ObsSeasonalHr" =>
-      [ "12(ObsSeasonalHrsDay):temporalhour|seasonalhour", undef ],
-    "ObsSeasonalHrR" =>
-      [ "12(ObsSeasonalHrsDay):temporalhour|seasonalhour", undef ],
-    "ObsSeasonN"      => [ "season",    undef ],
-    "ObsTime"         => [ "time",      undef ],
-    "ObsTimeR"        => [ "time",      undef ],
-    "ObsTimezone"     => [ "timezone",  undef ],
-    "ObsWeekofyear"   => [ "week",      undef ],
-    "ObsYearProgress" => [ "progress",  "%" ],
-    "ObsYearRemainD"  => [ "remaining", "1:day|days", 1 ],
-
-    #--
-    "SunAlt"              => [ "alt",             undef ],
-    "SunAz"               => [ "az",              "°" ],
-    "SunCompass"          => [ "direction",       undef ],
-    "SunCompassI"         => [ "direction",       undef ],
-    "SunCompassS"         => [ "direction",       undef ],
-    "SunDec"              => [ "dec",             "°" ],
-    "SunDiameter"         => [ "diameter",        "'" ],
-    "SunDistance"         => [ "distance toce",   "km" ],
-    "SunDistanceObserver" => [ "distance toobs",  "km" ],
-    "SunHrsInvisible"     => [ "hoursofnight",    "h" ],
-    "SunHrsVisible"       => [ "hoursofsunlight", "h" ],
-    "SunLon"              => [ "longitude",       "°" ],
-    "SunRa"               => [ "ra",              "h" ],
-    "SunRise"             => [ "rise",            undef ],
-    "SunSet"              => [ "set",             undef ],
-    "SunSign"             => [ "sign",            undef ],
-    "SunTransit"          => [ "transit",         undef ],
 );
 
 our @zodiac = ("aries","taurus","gemini","cancer","leo","virgo",
@@ -1403,51 +769,6 @@ our @zodiac = ("aries","taurus","gemini","cancer","leo","virgo",
 our @phases = ("newmoon","waxingcrescent", "firstquarter", "waxingmoon", 
     "fullmoon", "waningmoon", "lastquarter", "waningcrescent");
 
-our @dayphases = (
-    #-- night
-    "dusk",
-    "earlyevening",
-    "evening",
-    "lateevening",
-    "earlynight",
-    "beforemidnight",
-    "midnight",
-    "aftermidnight",
-    "latenight",
-    "cockcrow",
-    "firstmorninglight",
-    "dawn",
-    #-- day
-    "breakingdawn",
-    "earlymorning",
-    "morning",
-    "earlyforenoon",
-    "forenoon",
-    "lateforenoon",
-    "noon",
-    "earlyafternoon",
-    "afternoon",
-    "afternoon",
-    "lateafternoon",
-    "firstdusk",
-    );
-
-my %roman = (
-    1       => 'I',
-    5       => 'V',
-    10      => 'X',
-    50      => 'L',
-    100     => 'C',
-    500     => 'D',
-    1000    => 'M',
-    5000    => '(V)',
-    10000   => '(X)',
-    50000   => '(L)',
-    100000  => '(C)',
-    500000  => '(D)',
-    1000000 => '(M)',
-);
-
 our @seasons = ( "winter", "spring", "summer", "fall" );
 
 our %seasonn = (
@@ -1455,29 +776,6 @@ our %seasonn = (
     "summer" => [ 173, 265 ],    #21.06. bis 21./22.09.
     "fall"   => [ 266, 353 ],    #22./23.09. bis 20./21.12.
     "winter" => [ 354, 79 ]
-);
-
-our %seasonmn = (
-    "spring" => [ 3,  5 ],       #01.03. - 31.5.
-    "summer" => [ 6,  8 ],       #01.06. - 31.8.
-    "fall"   => [ 9,  11 ],      #01.09. - 30.11.
-    "winter" => [ 12, 2 ],       #01.12. - 28./29.2.
-);
-
-our @seasonsp = (
-    "winter",      "earlyspring", "firstspring", "fullspring",
-    "earlysummer", "midsummer",   "latesummer",  "earlyfall",
-    "fullfall",    "latefall"
-);
-
-our %seasonppos = (
-    earlyspring => [ 37.136633, -8.817837 ],    #South-West Portugal
-    earlyfall   => [ 60.161880, 24.937267 ],    #South Finland / Helsinki
-);
-
-our @compasspoint = (
-    "cpn", "cpnne", "cpne", "cpene", "cpe", "cpese", "cpse", "cpsse",
-    "cps", "cpssw", "cpsw", "cpwsw", "cpw", "cpwnw", "cpnw", "cpnnw"
 );
 
 #-- Run before package compilation
@@ -1530,7 +828,7 @@ _LoadOptionalPackages();
 
 sub SunRise($$$$$$$$);
 sub MoonRise($$$$$$$);
-sub SetTime(;$$$);
+sub SetTime(;$$);
 sub Compute($;$$);
 
 ########################################################################################################
@@ -1588,8 +886,8 @@ sub Define ($@) {
  # for the very first definition, set some default attributes
  if ( $init_done && !defined( $hash->{OLDDEF} ) ) {
    $attr{$name}{icon}        = 'telescope';
-   $attr{$name}{recomputeAt} = 'NewDay,SeasonalHr';
-   $attr{$name}{stateFormat} = 'ObsDaytime';
+   $attr{$name}{recomputeAt} = 'NewDay,SunRise,SunSet,AstroTwilightEvening,AstroTwilightMorning,CivilTwilightEvening,CivilTwilightMorning,CustomTwilightEvening,CustomTwilightMorning
+';
  }
 
  return undef;
@@ -1688,18 +986,6 @@ sub Attr(@) {
           unless($value =~ m/^(1|0)$/);
         readingsSingleUpdate($hash,"state",$value?"inactive":"Initialized",$init_done);
       };
-      #-- earlyfall modified at runtime
-      $key eq "earlyfall" and do {
-        #-- check value
-        return "[Astro] $do $name attribute $key must be in format <month>-<day> while <month> can only be 08 or 09"
-          unless($value =~ m/^(0[8-9])-(0[1-9]|[12]\d|30|31)$/);
-      };
-      #-- earlyspring modified at runtime
-      $key eq "earlyspring" and do {
-        #-- check value
-        return "[Astro] $do $name attribute $key must be in format <month>-<day> while <month> can only be 02 or 03"
-          unless($value =~ m/^(0[2-3])-(0[1-9]|[12]\d|30|31)$/);
-      };
       #-- horizon modified at runtime
       $key eq "horizon" and do {
         #-- check value
@@ -1740,26 +1026,6 @@ sub Attr(@) {
             unless(grep( m/^$val$/, @skel ));          
         }
         $hash->{RECOMPUTEAT} = join(',', @vals);
-      };
-      #-- schedule modified at runtime
-      $key eq "schedule" and do {
-        my @skel = split(',', $attrs{schedule});
-        shift @skel;
-        #-- check value 1/2
-        return "[Astro] $do $name attribute $key must be one or many of ".join(',', @skel)
-          if(!$value || $value eq "");
-        #-- check value 2/2
-        my @vals = split(',', $value);
-        foreach my $val (@vals) {
-          return "[Astro] $do $name attribute value $val is invalid, must be one or many of ".join(',', @skel)
-            unless(grep( m/^$val$/, @skel ));          
-        }
-      };
-      #-- seasonalHrs modified at runtime
-      $key eq "seasonalHrs" and do {
-        #-- check value
-        return "[Astro] $do $name attribute $key must be an integer number >= 1 and <= 24 hours"
-          unless($value =~ m/^(\d+)(?::(\d+))?$/ && $1 >= 1. && $1 <= 24. && (!$2 || $2 >= 1. && $2 <= 24.));
       };
     }
   }
@@ -1905,152 +1171,6 @@ sub _LoadOptionalPackages {
       $json->allow_nonref;
       $json->shrink;
     }
-}
-
-########################################################################################################
-#
-# DistOnEarth - Calculates the distance between two positions on the surface of the earth
-#
-########################################################################################################
-
-sub DistOnEarth($$$$) {
-    my ( $lat1, $lng1, $lat2, $lng2 ) = @_;
-
-    my $aearth = 6378.137;    # GRS80/WGS84 semi major axis of earth ellipsoid
-
-    $lat1 *= $DEG;
-    $lng1 *= $DEG;
-    $lat2 *= $DEG;
-    $lng2 *= $DEG;
-
-    my $dlat = $lat2 - $lat1;
-    my $dlng = $lng2 - $lng1;
-    my $a =
-      sin( $dlat / 2 ) * sin( $dlat / 2 ) +
-      cos($lat1) * cos($lat2) * sin( $dlng / 2 ) * sin( $dlng / 2 );
-    my $c = 2 * atan2( sqrt($a), sqrt( 1 - $a ) );
-    my $dist = $aearth * $c;
-
-    return $dist;
-}
-
-########################################################################################################
-#
-# DaysOfMonth - Returns the ultimo number of days of a specific month in a year
-#
-########################################################################################################
-
-sub DaysOfMonth ($$) {
-    my ( $y, $m ) = @_;
-    if ( $m < 8. ) {
-        if ( $m % 2 ) {
-            return 31.;
-        }
-        else {
-            return 28. + IsLeapYear($y)
-              if ( $m == 2. );
-            return 30.;
-        }
-    }
-    elsif ( $m % 2. ) {
-        return 30.;
-    }
-    else {
-        return 31.;
-    }
-}
-
-########################################################################################################
-#
-# IsLeapYear - Returns 1 for a leap year, otherwise 0 (also works for Julian date)
-#
-########################################################################################################
-
-sub IsLeapYear ($) {
-    my $y = shift;
-    return 0 if $y % 4;
-    return 1 if $y % 100;
-    return 0 if $y % 400;
-    return 1;
-}
-
-########################################################################################################
-#
-# Deg2CP - numerical degree to compasspoint
-#
-########################################################################################################
-
-sub Deg2CP($;$$) {
-    my ($deg,$txt,$lang) = @_;
-    my $i = floor((($deg+11.25)%360)/22.5);
-    return $i unless(defined($txt));
-    return $compasspoint[$i] if($txt eq '0');
-
-    $lang = uc(AttrVal("global","language","EN")) unless($lang);
-    if( exists($transtable{uc($lang)}) ){
-      $tt = $transtable{uc($lang)};
-    }else{
-      $tt = $transtable{EN};
-    }
-    return $tt->{ $compasspoint[$i] }[1] if ($txt eq '2');
-    return $tt->{ $compasspoint[$i] }[0];
-}
-
-########################################################################################################
-#
-# Arabic2Roman - Convert an arabic number into a roman number format
-#
-########################################################################################################
-
-sub Arabic2Roman ($) {
-    my ($n) = @_;
-    my %items = ();
-    my @r;
-    return "" if (!$n || $n eq "" || $n !~ m/^\d+(?:\.\d+)?$/ || $n == 0.);
-    return $n
-      if ( $n >= 1000001. );    # numbers above cannot be displayed/converted
-
-    for my $v ( sort { $b <=> $a } keys %roman ) {
-        my $c = int( $n / $v );
-        next unless ($c);
-        $items{ $roman{$v} } = $c;
-        $n -= $v * $c;
-    }
-
-    my @th = sort { $a <=> $b } keys %roman;
-
-    for ( my $i = 0 ; $i < @th ; $i++ ) {
-        my $v = $th[$i];
-        next if ( $v >= 1000000. );    # numbers above have no greater icon
-        my $k = $roman{$v};
-        my $c = $items{$k};
-        next unless ($c);
-
-        my $gv = $th[ $i + 1. ];
-        my $gk = $roman{$gv};
-
-        if ( $c == 4 || ( $gv / $v == $c ) ) {
-            $items{$gk}++;
-            $c = $gv - $c * $v;
-            $items{$k} = $c * -1;
-
-        }
-    }
-
-    for my $v ( sort { $b <=> $a } keys %roman ) {
-        my $l = $roman{$v};
-        my $c = $items{$l};
-        next unless ($c);
-
-        if ( $c > 0 ) {
-            push @r, $l for ( 1 .. $c );
-        }
-        else {
-            push @r, ( $l, pop @r );
-        }
-    }
-
-    return join '', @r;
 }
 
 ########################################################################################################
@@ -2793,60 +1913,33 @@ sub MoonRise($$$$$$$){
 # 
 ########################################################################################################
 
-sub SetTime (;$$$) {
-    my ( $time, $tz, $dayOffset ) = @_;
+sub SetTime (;$$) {
+    my ( $time, $tz ) = @_;
 
     #-- readjust timezone
     local $ENV{TZ} = $tz if ($tz);
     tzset();
 
     $time = gettimeofday() unless ( defined($time) );
-    $dayOffset = 2 unless ( defined($dayOffset) );
-    my $D = $dayOffset ? \%Date : {};
 
     my ( $sec, $min, $hour, $day, $month, $year, $wday, $yday, $isdst ) =
       localtime($time);
-    my $isdstnoon =
-      ( localtime( timelocal( 0, 0, 12, $day, $month, $year ) ) )[8];
     $year  += 1900;
     $month += 1;
-    $D->{timestamp} = $time;
-    $D->{timeday}   = $hour + $min / 60. + $sec / 3600.;
-    $D->{year}      = $year;
-    $D->{month}     = $month;
-    $D->{day}       = $day;
-    $D->{hour}      = $hour;
-    $D->{min}       = $min;
-    $D->{sec}       = $sec;
-    $D->{isdst}     = $isdst;
-    $D->{isdstnoon} = $isdstnoon;
-
+    $Date{timestamp} = $time;
+    $Date{timeday}   = $hour + $min / 60. + $sec / 3600.;
+    $Date{year}      = $year;
+    $Date{month}     = $month;
+    $Date{day}       = $day;
+    $Date{hour}      = $hour;
+    $Date{min}       = $min;
+    $Date{sec}       = $sec;
+    $Date{isdst}     = $isdst;
     #-- broken on windows
-    #$D->{zonedelta} = (strftime "%z", localtime)/100;
-    $D->{zonedelta} = _tzoffset($time) / 100;
-
+    #$Date{zonedelta} = (strftime "%z", localtime)/100;
+    $Date{zonedelta} = _tzoffset($time) / 100;
     #-- half broken in windows
-    $D->{dayofyear} = 1 * strftime( "%j", localtime($time) );
-
-    $D->{weekofyear}    = 1 * strftime( "%V", localtime($time) );
-    $D->{isly}          = IsLeapYear($year);
-    $D->{yearremdays}   = 365. + $D->{isly} - $D->{dayofyear};
-    $D->{yearprogress}  = $D->{dayofyear} / ( 365. + $D->{isly} );
-    $D->{monthremdays}  = DaysOfMonth( $D->{year}, $D->{month} ) - $D->{day};
-    $D->{monthprogress} = $D->{day} / DaysOfMonth( $D->{year}, $D->{month} );
-
-    #-- add info from X days before+after
-    if ($dayOffset) {
-        my $i = $dayOffset * -1.;
-        while ( $i < $dayOffset + 1. ) {
-            $D->{$i} = SetTime( $time + ( 86400. * $i ), $tz, 0 )
-              unless ( $i == 0 );
-            $i++;
-        }
-    }
-    else {
-        return $D;
-    }
+    $Date{dayofyear} = 1 * strftime( "%j", localtime($time) );
 
     delete local $ENV{TZ};
     tzset();
@@ -2862,12 +1955,9 @@ sub SetTime (;$$$) {
   
 sub Compute($;$$){
   my ($hash,$dayOffset,$params) = @_;
-  undef %Astro unless($dayOffset);
+  undef %Astro;
   my $name = $hash->{NAME};
-  my $tz = AttrVal($name,"timezone",AttrVal("global","timezone",undef));
-  SetTime(undef, $tz) if (scalar keys %Date == 0); # fill %Date if it is still empty after restart
-  my $A = $dayOffset ? {} : \%Astro;
-  my $D = $dayOffset ? $Date{$dayOffset} : \%Date;
+  SetTime() if (scalar keys %Date == 0); # fill %Date if it is still empty after restart to avoid warnings
 
   return undef if( !$init_done );
 
@@ -2884,52 +1974,44 @@ sub Compute($;$$){
   }
 
   #-- readjust timezone
+  my $tz = AttrVal($name,"timezone",AttrVal("global","timezone",undef));
+  $tz = $params->{"timezone"}
+    if ( defined( $params->{"timezone"} ) );
   local $ENV{TZ} = $tz if ($tz);
   tzset();
 
-  #-- load schedule schema
-  my @schedsch =
-    split(
-      ',',
-      (
-          defined( $params->{"schedule"} )
-          ? $params->{"schedule"}
-          : AttrVal( $name, "schedule", $attrs{schedule} )
-      )
-    );
-
   #-- geodetic latitude and longitude of observer on WGS84  
   if( defined($params->{"latitude"}) ){
-    $A->{ObsLat}  = $params->{"latitude"};
+    $Astro{ObsLat}  = $params->{"latitude"};
   }elsif( defined($attr{$name}) && defined($attr{$name}{"latitude"}) ){
-    $A->{ObsLat}  = $attr{$name}{"latitude"};
+    $Astro{ObsLat}  = $attr{$name}{"latitude"};
   }elsif( defined($attr{"global"}{"latitude"}) ){
-    $A->{ObsLat}  = $attr{"global"}{"latitude"};
+    $Astro{ObsLat}  = $attr{"global"}{"latitude"};
   }else{
-    $A->{ObsLat}  = 50.0;
+    $Astro{ObsLat}  = 50.0;
     Log3 $name,3,"[Astro] No latitude attribute set in global device, using 50.0°"
       if (!$dayOffset);
   }
   if( defined($params->{"longitude"}) ){
-    $A->{ObsLon}  = $params->{"longitude"};
+    $Astro{ObsLon}  = $params->{"longitude"};
   }elsif( defined($attr{$name}) && defined($attr{$name}{"longitude"}) ){
-    $A->{ObsLon}  = $attr{$name}{"longitude"};
+    $Astro{ObsLon}  = $attr{$name}{"longitude"};
   }elsif( defined($attr{"global"}{"longitude"}) ){
-    $A->{ObsLon}  = $attr{"global"}{"longitude"};
+    $Astro{ObsLon}  = $attr{"global"}{"longitude"};
   }else{
-    $A->{ObsLon}  = 10.0;
+    $Astro{ObsLon}  = 10.0;
     Log3 $name,3,"[Astro] No longitude attribute set in global device, using 10.0°"
       if (!$dayOffset);
   } 
   #-- altitude of observer in meters above WGS84 ellipsoid 
   if( defined($params->{"altitude"}) ){
-    $A->{ObsAlt}  = $params->{"altitude"};
+    $Astro{ObsAlt}  = $params->{"altitude"};
   }elsif( defined($attr{$name}) && defined($attr{$name}{"altitude"}) ){
-    $A->{ObsAlt}  = $attr{$name}{"altitude"};
+    $Astro{ObsAlt}  = $attr{$name}{"altitude"};
   }elsif( defined($attr{"global"}{"altitude"}) ){
-    $A->{ObsAlt}  = $attr{"global"}{"altitude"};
+    $Astro{ObsAlt}  = $attr{"global"}{"altitude"};
   }else{
-    $A->{ObsAlt}  = 0.0;
+    $Astro{ObsAlt}  = 0.0;
     Log3 $name,3,"[Astro] No altitude attribute set in global device, using 0.0 m above sea level"
       if (!$dayOffset);
   }
@@ -2937,176 +2019,97 @@ sub Compute($;$$){
   if( defined($params->{"horizon"}) &&
       $params->{"horizon"} =~ m/^([^:]+)(?::(.+))?$/
   ){
-    $A->{ObsHorMorning} = $1;
-    $A->{ObsHorEvening} = defined($2) ? $2 : $1;
+    $Astro{ObsHorMorning} = $1;
+    $Astro{ObsHorEvening} = defined($2) ? $2 : $1;
   }elsif( defined($attr{$name}) && defined($attr{$name}{"horizon"}) &&
       $attr{$name}{"horizon"} =~ m/^([^:]+)(?::(.+))?$/
   ){
-    $A->{ObsHorMorning} = $1;
-    $A->{ObsHorEvening} = defined($2) ? $2 : $1;
+    $Astro{ObsHorMorning} = $1;
+    $Astro{ObsHorEvening} = defined($2) ? $2 : $1;
   } else {
-    $A->{ObsHorMorning} = 0.0;
-    $A->{ObsHorEvening} = 0.0;
+    $Astro{ObsHorMorning} = 0.0;
+    $Astro{ObsHorEvening} = 0.0;
     Log3 $name,5,"[Astro] No horizon attribute defined, using 0.0° for morning and evening"
       if (!$dayOffset);
   }
-  #-- custom date for early spring
-  my $earlyspring = '02-22';
-  if( defined($params->{"earlyspring"}) ){
-    $earlyspring  = $params->{"earlyspring"};
-  }elsif( defined($attr{$name}) && defined($attr{$name}{"earlyspring"}) ){
-    $earlyspring  = $attr{$name}{"earlyspring"};
-  } else {
-    Log3 $name,5,"[Astro] No earlyspring attribute defined, using date $earlyspring"
-      if (!$dayOffset);
-  }
-  #-- custom date for early fall
-  my $earlyfall = '08-20';
-  if( defined($params->{"earlyfall"}) ){
-    $earlyfall  = $params->{"earlyfall"};
-  }elsif( defined($attr{$name}) && defined($attr{$name}{"earlyfall"}) ){
-    $earlyfall  = $attr{$name}{"earlyfall"};
-  } else {
-    Log3 $name,5,"[Astro] No earlyfall attribute defined, using date $earlyfall"
-      if (!$dayOffset);
-  }
-  #-- custom number for seasonal hours
-  my $daypartsIsRoman = 0;
-  my $dayparts        = 12;
-  my $nightparts      = 12;
-  if( defined($params->{"seasonalHrs"}) &&
-      $params->{"seasonalHrs"} =~ m/^(([^:]+)(?::(.+))?)$/
-  ){
-    $daypartsIsRoman = 1 if ($1 eq '4'); # special handling of '^4$' as roman format
-    $dayparts   = $daypartsIsRoman ? 12. : $2;
-    $nightparts = $3 ? $3 : $2;
-  }elsif( defined($attr{$name}) && defined($attr{$name}{"seasonalHrs"}) &&
-      $attr{$name}{"seasonalHrs"} =~ m/^(([^:]+)(?::(.+))?)$/
-  ){
-    $daypartsIsRoman = 1 if ($1 eq '4'); # special handling of '^4$' as roman format
-    $dayparts   = $daypartsIsRoman ? 12. : $2;
-    $nightparts = $3 ? $3 : $2;
-  } else {
-    Log3 $name,5,"[Astro] No seasonalHrs attribute defined, using $dayparts seasonal hours for day and night"
-      if (!$dayOffset);
-  }
-
-  #-- add info from 2 days after but only +1 day will be useful after all
-  if (!defined($dayOffset)) {
-    $A->{2}     = Compute($hash, 2, $params);   # today+2, has no tomorrow or yesterday
-    $A->{1}     = Compute($hash, 1, $params);   # today+1, only has tomorrow and incomplete yesterday
-  }
-
-  #-- reference for tomorrow
-  my $At;
-  if (!defined($dayOffset) || $dayOffset == -1. || $dayOffset == 0. || $dayOffset == 1. ) {
-    my $t = (!defined($dayOffset)?0.:$dayOffset) + 1.;
-    $At = \%Astro unless ($t);
-    $At = $Astro{$t} if ($t && defined($Astro{$t}));
-  }
 
   #-- internal variables converted to Radians and km 
-  my $lat      = $A->{ObsLat}*$DEG;
-  my $lon      = $A->{ObsLon}*$DEG;
-  my $height   = $A->{ObsAlt} * 0.001;   
+  my $lat      = $Astro{ObsLat}*$DEG;
+  my $lon      = $Astro{ObsLon}*$DEG;
+  my $height   = $Astro{ObsAlt} * 0.001;   
 
   #if (eval(form.Year.value)<=1900 || eval(form.Year.value)>=2100 ) {
   #  alert("Dies Script erlaubt nur Berechnungen"+
   #  return;
   #}
 
-  my $JD0 = CalcJD( $D->{day}, $D->{month}, $D->{year} );
-  my $JD  = $JD0 + ( $D->{hour} - $D->{zonedelta} + $D->{min}/60. + $D->{sec}/3600.)/24;
+  my $JD0 = CalcJD( $Date{day}, $Date{month}, $Date{year} );
+  my $JD  = $JD0 + ( $Date{hour} - $Date{zonedelta} + $Date{min}/60. + $Date{sec}/3600.)/24;
   my $TDT = $JD  + $deltaT/86400.0; 
   
-  $A->{".ObsJD"}  = $JD;
-  $A->{ObsJD}     = _round($JD,2);
+  $Astro{".ObsJD"}  = $JD;
+  $Astro{ObsJD}     = _round($JD,2);
 
   my $gmst          = GMST($JD);
   my $lmst          = GMST2LMST($gmst, $lon); 
-  $A->{".ObsGMST"}  = $gmst;
-  $A->{".ObsLMST"}  = $lmst;
-  $A->{ObsGMST}     = HHMMSS($gmst);
-  $A->{ObsLMST}     = HHMMSS($lmst);
+  $Astro{".ObsGMST"}  = $gmst;
+  $Astro{".ObsLMST"}  = $lmst;
+  $Astro{ObsGMST}     = HHMMSS($gmst);
+  $Astro{ObsLMST}     = HHMMSS($lmst);
   
   #-- geocentric cartesian coordinates of observer
   my ($x,$y,$z,$radius) = Observer2EquCart($lon, $lat, $height, $gmst); 
  
   #-- calculate data for the sun at given time
   my $sunCoor   = SunPosition($TDT, $lat, $lmst*15.*$DEG);   
-  $A->{".SunLon"}      = $sunCoor->{lon}*$RAD;
-  #$A->{"SunLat"}       = $sunCoor->{lat}*$RAD;
-  $A->{".SunRa"}       = $sunCoor->{ra} *$RAD/15;
-  $A->{".SunDec"}      = $sunCoor->{dec}*$RAD;
-  $A->{".SunAz"}       = $sunCoor->{az} *$RAD;
-  $A->{".SunAlt"}      = $sunCoor->{alt}*$RAD + Refraction($sunCoor->{alt});  # including refraction WARNUNG => *RAD ???
-  $A->{".SunDiameter"} = $sunCoor->{diameter}*$RAD*60; #angular diameter in arc seconds
-  $A->{".SunDistance"} = $sunCoor->{distance};
-  $A->{SunLon}      = _round($A->{".SunLon"},1);
-  #$A->{SunLat}      = $sunCoor->{lat}*$RAD;
-  $A->{SunRa}       = HHMM($A->{".SunRa"});
-  $A->{SunDec}      = _round($A->{".SunDec"},1);
-  $A->{SunAz}       = _round($A->{".SunAz"},1);
-  $A->{SunCompassI} = Deg2CP($A->{".SunAz"});
-  $A->{SunCompass}  = $tt->{Deg2CP($A->{".SunAz"},0)}[0];
-  $A->{SunCompassS} = $tt->{Deg2CP($A->{".SunAz"},0)}[1];
-  $A->{SunAlt}      = _round($A->{".SunAlt"},1);
-  $A->{SunSign}     = $tt->{$sunCoor->{sig}};
-  $A->{SunDiameter} = _round($A->{".SunDiameter"},1);
-  $A->{SunDistance} = _round($A->{".SunDistance"},0);
+  $Astro{".SunLon"}      = $sunCoor->{lon}*$RAD;
+  #$Astro{"SunLat"}       = $sunCoor->{lat}*$RAD;
+  $Astro{".SunRa"}       = $sunCoor->{ra} *$RAD/15;
+  $Astro{".SunDec"}      = $sunCoor->{dec}*$RAD;
+  $Astro{".SunAz"}       = $sunCoor->{az} *$RAD;
+  $Astro{".SunAlt"}      = $sunCoor->{alt}*$RAD + Refraction($sunCoor->{alt});  # including refraction WARNUNG => *RAD ???
+  $Astro{".SunDiameter"} = $sunCoor->{diameter}*$RAD*60; #angular diameter in arc seconds
+  $Astro{".SunDistance"} = $sunCoor->{distance};
+  $Astro{SunLon}      = _round($Astro{".SunLon"},1);
+  #$Astro{SunLat}      = $sunCoor->{lat}*$RAD;
+  $Astro{SunRa}       = HHMM($Astro{".SunRa"});
+  $Astro{SunDec}      = _round($Astro{".SunDec"},1);
+  $Astro{SunAz}       = _round($Astro{".SunAz"},1);
+  $Astro{SunAlt}      = _round($Astro{".SunAlt"},1);
+  $Astro{SunSign}     = $tt->{$sunCoor->{sig}};
+  $Astro{SunDiameter} = _round($Astro{".SunDiameter"},1);
+  $Astro{SunDistance} = _round($Astro{".SunDistance"},0);
   
   #-- calculate distance from the observer (on the surface of earth) to the center of the sun
   my ($xs,$ys,$zs) = EquPolar2Cart($sunCoor->{ra}, $sunCoor->{dec}, $sunCoor->{distance});
-  $A->{".SunDistanceObserver"} = sqrt( ($xs-$x)**2 + ($ys-$y)**2 + ($zs-$z)**2 );
-  $A->{SunDistanceObserver} = _round($A->{".SunDistanceObserver"},0);
+  $Astro{".SunDistanceObserver"} = sqrt( ($xs-$x)**2 + ($ys-$y)**2 + ($zs-$z)**2 );
+  $Astro{SunDistanceObserver} = _round($Astro{".SunDistanceObserver"},0);
   
   my ($suntransit,$sunrise,$sunset,$CivilTwilightMorning,$CivilTwilightEvening,
     $NauticTwilightMorning,$NauticTwilightEvening,$AstroTwilightMorning,$AstroTwilightEvening,$CustomTwilightMorning,$CustomTwilightEvening) = 
-    SunRise($JD0, $deltaT, $lon, $lat, $D->{zonedelta}, $A->{ObsHorMorning}, $A->{ObsHorEvening}, 0);
-  $A->{".SunTransit"}            = $suntransit;
-  $A->{".SunRise"}               = $sunrise;
-  $A->{".SunSet"}                = $sunset;
-  $A->{".CivilTwilightMorning"}  = $CivilTwilightMorning;
-  $A->{".CivilTwilightEvening"}  = $CivilTwilightEvening;
-  $A->{".NauticTwilightMorning"} = $NauticTwilightMorning;
-  $A->{".NauticTwilightEvening"} = $NauticTwilightEvening;
-  $A->{".AstroTwilightMorning"}  = $AstroTwilightMorning;
-  $A->{".AstroTwilightEvening"}  = $AstroTwilightEvening;
-  $A->{".CustomTwilightMorning"} = $CustomTwilightMorning;
-  $A->{".CustomTwilightEvening"} = $CustomTwilightEvening;
-  $A->{SunTransit}              = HHMM($suntransit);
-  $A->{SunRise}                 = HHMM($sunrise);
-  $A->{SunSet}                  = HHMM($sunset);
-  $A->{CivilTwilightMorning}    = HHMM($CivilTwilightMorning);
-  $A->{CivilTwilightEvening}    = HHMM($CivilTwilightEvening);
-  $A->{NauticTwilightMorning}   = HHMM($NauticTwilightMorning);
-  $A->{NauticTwilightEvening}   = HHMM($NauticTwilightEvening);
-  $A->{AstroTwilightMorning}    = HHMM($AstroTwilightMorning);
-  $A->{AstroTwilightEvening}    = HHMM($AstroTwilightEvening);
-  $A->{CustomTwilightMorning}   = HHMM($CustomTwilightMorning);
-  $A->{CustomTwilightEvening}   = HHMM($CustomTwilightEvening);
-  AddToSchedule($A, $suntransit, "SunTransit")
-    if (grep (/^SunTransit/, @schedsch));
-  AddToSchedule($A, $sunrise, "SunRise")
-    if (grep (/^SunRise/, @schedsch));
-  AddToSchedule($A, $sunset, "SunSet")
-    if (grep (/^SunSet/, @schedsch));
-  AddToSchedule($A, $CivilTwilightMorning, "CivilTwilightMorning")
-    if (grep (/^CivilTwilightMorning/, @schedsch));
-  AddToSchedule($A, $CivilTwilightEvening, "CivilTwilightEvening")
-    if (grep (/^CivilTwilightEvening/, @schedsch));
-  AddToSchedule($A, $NauticTwilightMorning, "NauticTwilightMorning")
-    if (grep (/^NauticTwilightMorning/, @schedsch));
-  AddToSchedule($A, $NauticTwilightEvening, "NauticTwilightEvening")
-    if (grep (/^NauticTwilightEvening/, @schedsch));
-  AddToSchedule($A, $AstroTwilightMorning, "AstroTwilightMorning")
-    if (grep (/^AstroTwilightMorning/, @schedsch));
-  AddToSchedule($A, $AstroTwilightEvening, "AstroTwilightEvening")
-    if (grep (/^AstroTwilightEvening/, @schedsch));
-  AddToSchedule($A, $CustomTwilightMorning, "CustomTwilightMorning")
-    if (grep (/^CustomTwilightMorning/, @schedsch));
-  AddToSchedule($A, $CustomTwilightEvening, "CustomTwilightEvening")
-    if (grep (/^CustomTwilightEvening/, @schedsch));
+    SunRise($JD0, $deltaT, $lon, $lat, $Date{zonedelta}, $Astro{ObsHorMorning}, $Astro{ObsHorEvening}, 0);
+  $Astro{".SunTransit"}            = $suntransit;
+  $Astro{".SunRise"}               = $sunrise;
+  $Astro{".SunSet"}                = $sunset;
+  $Astro{".CivilTwilightMorning"}  = $CivilTwilightMorning;
+  $Astro{".CivilTwilightEvening"}  = $CivilTwilightEvening;
+  $Astro{".NauticTwilightMorning"} = $NauticTwilightMorning;
+  $Astro{".NauticTwilightEvening"} = $NauticTwilightEvening;
+  $Astro{".AstroTwilightMorning"}  = $AstroTwilightMorning;
+  $Astro{".AstroTwilightEvening"}  = $AstroTwilightEvening;
+  $Astro{".CustomTwilightMorning"} = $CustomTwilightMorning;
+  $Astro{".CustomTwilightEvening"} = $CustomTwilightEvening;
+  $Astro{SunTransit}              = HHMM($suntransit);
+  $Astro{SunRise}                 = HHMM($sunrise);
+  $Astro{SunSet}                  = HHMM($sunset);
+  $Astro{CivilTwilightMorning}    = HHMM($CivilTwilightMorning);
+  $Astro{CivilTwilightEvening}    = HHMM($CivilTwilightEvening);
+  $Astro{NauticTwilightMorning}   = HHMM($NauticTwilightMorning);
+  $Astro{NauticTwilightEvening}   = HHMM($NauticTwilightEvening);
+  $Astro{AstroTwilightMorning}    = HHMM($AstroTwilightMorning);
+  $Astro{AstroTwilightEvening}    = HHMM($AstroTwilightEvening);
+  $Astro{CustomTwilightMorning}   = HHMM($CustomTwilightMorning);
+  $Astro{CustomTwilightEvening}   = HHMM($CustomTwilightEvening);
 
   #-- hours of day and night
   my $hoursofsunlight;
@@ -3115,7 +2118,7 @@ sub Compute($;$$){
       (!defined($sunset) && !defined($sunrise)) ||
       ($sunset !~ m/^\d+/ && $sunrise !~ m/^\d+/)
   ){
-    if ($A->{SunAlt} > 0.) {
+    if ($Astro{SunAlt} > 0.) {
       $hoursofsunlight = 24.;
       $hoursofnight = 0.;
     } else {
@@ -3137,60 +2140,51 @@ sub Compute($;$$){
     $hoursofsunlight = $ss - $sunrise;
     $hoursofnight = 24. - $hoursofsunlight;
   }
-  $A->{".SunHrsVisible"}   = $hoursofsunlight;
-  $A->{".SunHrsInvisible"} = $hoursofnight;
-  $A->{SunHrsVisible}   = HHMM($hoursofsunlight);
-  $A->{SunHrsInvisible} = HHMM($hoursofnight);
+  $Astro{".SunHrsVisible"}   = $hoursofsunlight;
+  $Astro{".SunHrsInvisible"} = $hoursofnight;
+  $Astro{SunHrsVisible}   = HHMM($hoursofsunlight);
+  $Astro{SunHrsInvisible} = HHMM($hoursofnight);
   
   #-- calculate data for the moon at given time
   my $moonCoor  = MoonPosition($sunCoor->{lon}, $sunCoor->{anomalyMean}, $TDT, $lon, $lat, $radius, $lmst*15.*$DEG);
-  $A->{".MoonLon"}      = $moonCoor->{lon}*$RAD;
-  $A->{".MoonLat"}      = $moonCoor->{lat}*$RAD;
-  $A->{".MoonRa"}       = $moonCoor->{ra} *$RAD/15.;
-  $A->{".MoonDec"}      = $moonCoor->{dec}*$RAD;
-  $A->{".MoonAz"}       = $moonCoor->{az} *$RAD;
-  $A->{".MoonAlt"}      = $moonCoor->{alt}*$RAD + Refraction($moonCoor->{alt});  # including refraction WARNUNG => *RAD ???
-  $A->{".MoonDistance"} = $moonCoor->{distance};
-  $A->{".MoonDiameter"} = $moonCoor->{diameter}*$RAD*60.; # angular diameter in arc seconds
-  $A->{".MoonAge"}      = $moonCoor->{age}*$RAD;
-  $A->{".MoonPhaseN"}   = $moonCoor->{phasen};
-  $A->{MoonLon}      = _round($A->{".MoonLon"},1);
-  $A->{MoonLat}      = _round($A->{".MoonLat"},1);
-  $A->{MoonRa}       = HHMM($A->{".MoonRa"});
-  $A->{MoonDec}      = _round($A->{".MoonDec"},1);
-  $A->{MoonAz}       = _round($A->{".MoonAz"},1);
-  $A->{MoonCompassI} = Deg2CP($A->{".MoonAz"});
-  $A->{MoonCompass}  = $tt->{Deg2CP($A->{".MoonAz"},0)}[0];
-  $A->{MoonCompassS} = $tt->{Deg2CP($A->{".MoonAz"},0)}[1];
-  $A->{MoonAlt}      = _round($A->{".MoonAlt"},1);
-  $A->{MoonSign}     = $tt->{$moonCoor->{sig}};
-  $A->{MoonDistance} = _round($A->{".MoonDistance"},0);
-  $A->{MoonDiameter} = _round($A->{".MoonDiameter"},1);
-  $A->{MoonAge}      = _round($A->{".MoonAge"},1);
-  $A->{MoonPhaseN}   = _round($A->{".MoonPhaseN"},2);
-  $A->{MoonPhaseI}   = $moonCoor->{phasei};
-  $A->{MoonPhaseS}   = $tt->{$moonCoor->{phases}};
+  $Astro{".MoonLon"}      = $moonCoor->{lon}*$RAD;
+  $Astro{".MoonLat"}      = $moonCoor->{lat}*$RAD;
+  $Astro{".MoonRa"}       = $moonCoor->{ra} *$RAD/15.;
+  $Astro{".MoonDec"}      = $moonCoor->{dec}*$RAD;
+  $Astro{".MoonAz"}       = $moonCoor->{az} *$RAD;
+  $Astro{".MoonAlt"}      = $moonCoor->{alt}*$RAD + Refraction($moonCoor->{alt});  # including refraction WARNUNG => *RAD ???
+  $Astro{".MoonDistance"} = $moonCoor->{distance};
+  $Astro{".MoonDiameter"} = $moonCoor->{diameter}*$RAD*60.; # angular diameter in arc seconds
+  $Astro{".MoonAge"}      = $moonCoor->{age}*$RAD;
+  $Astro{".MoonPhaseN"}   = $moonCoor->{phasen};
+  $Astro{MoonLon}      = _round($Astro{".MoonLon"},1);
+  $Astro{MoonLat}      = _round($Astro{".MoonLat"},1);
+  $Astro{MoonRa}       = HHMM($Astro{".MoonRa"});
+  $Astro{MoonDec}      = _round($Astro{".MoonDec"},1);
+  $Astro{MoonAz}       = _round($Astro{".MoonAz"},1);
+  $Astro{MoonAlt}      = _round($Astro{".MoonAlt"},1);
+  $Astro{MoonSign}     = $tt->{$moonCoor->{sig}};
+  $Astro{MoonDistance} = _round($Astro{".MoonDistance"},0);
+  $Astro{MoonDiameter} = _round($Astro{".MoonDiameter"},1);
+  $Astro{MoonAge}      = _round($Astro{".MoonAge"},1);
+  $Astro{MoonPhaseN}   = _round($Astro{".MoonPhaseN"},2);
+  $Astro{MoonPhaseI}   = $moonCoor->{phasei};
+  $Astro{MoonPhaseS}   = $tt->{$moonCoor->{phases}};
   
   #-- calculate distance from the observer (on the surface of earth) to the center of the moon
   my ($xm,$ym,$zm) = EquPolar2Cart($moonCoor->{ra}, $moonCoor->{dec}, $moonCoor->{distance});
   #Log 1,"  distance=".$moonCoor->{distance}."   test=".sqrt( ($xm)**2 + ($ym)**2 + ($zm)**2 )." $xm  $ym  $zm";
   #Log 1,"  distance=".$radius."   test=".sqrt( ($x)**2 + ($y)**2 + ($z)**2 )." $x  $y  $z";
-  $A->{".MoonDistanceObserver"} = sqrt( ($xm-$x)**2 + ($ym-$y)**2 + ($zm-$z)**2 );
-  $A->{MoonDistanceObserver}    = _round($A->{".MoonDistanceObserver"},0);
+  $Astro{".MoonDistanceObserver"} = sqrt( ($xm-$x)**2 + ($ym-$y)**2 + ($zm-$z)**2 );
+  $Astro{MoonDistanceObserver}    = _round($Astro{".MoonDistanceObserver"},0);
   
-  my ($moontransit,$moonrise,$moonset) = MoonRise($JD0, $deltaT, $lon, $lat, $radius, $D->{zonedelta}, 0);
-  $A->{".MoonTransit"} = $moontransit;
-  $A->{".MoonRise"}    = $moonrise;
-  $A->{".MoonSet"}     = $moonset;
-  $A->{MoonTransit}    = HHMM($moontransit);
-  $A->{MoonRise}       = HHMM($moonrise);
-  $A->{MoonSet}        = HHMM($moonset);
-  AddToSchedule($A, $moontransit, "MoonTransit")
-    if (grep (/^MoonTransit/, @schedsch));
-  AddToSchedule($A, $moonrise, "MoonRise")
-    if (grep (/^MoonRise/, @schedsch));
-  AddToSchedule($A, $moonset, "MoonSet")
-    if (grep (/^MoonSet/, @schedsch));
+  my ($moontransit,$moonrise,$moonset) = MoonRise($JD0, $deltaT, $lon, $lat, $radius, $Date{zonedelta}, 0);
+  $Astro{".MoonTransit"} = $moontransit;
+  $Astro{".MoonRise"}    = $moonrise;
+  $Astro{".MoonSet"}     = $moonset;
+  $Astro{MoonTransit}    = HHMM($moontransit);
+  $Astro{MoonRise}       = HHMM($moonrise);
+  $Astro{MoonSet}        = HHMM($moonset);
 
   #-- moon visiblity
   my $moonvisible;
@@ -3199,7 +2193,7 @@ sub Compute($;$$){
       (!defined($moonset) && !defined($moonrise)) ||
       ($moonset !~ m/^\d+/ && $moonrise !~ m/^\d+/)
   ){
-    if ($A->{MoonAlt} >= 0.) {
+    if ($Astro{MoonAlt} >= 0.) {
       $moonvisible = 24.;
       $mooninvisible = 0.;
     } else {
@@ -3221,559 +2215,38 @@ sub Compute($;$$){
     $moonvisible = $ss - $moonrise;
     $mooninvisible = 24. - $moonvisible;
   }
-  $A->{".MoonHrsVisible"}   = $moonvisible;
-  $A->{".MoonHrsInvisible"} = $mooninvisible;
-  $A->{MoonHrsVisible}   = HHMM($moonvisible);
-  $A->{MoonHrsInvisible} = HHMM($mooninvisible);
+  $Astro{".MoonHrsVisible"}   = $moonvisible;
+  $Astro{".MoonHrsInvisible"} = $mooninvisible;
+  $Astro{MoonHrsVisible}   = HHMM($moonvisible);
+  $Astro{MoonHrsInvisible} = HHMM($mooninvisible);
   
   #-- fix date
-  $A->{ObsDate}             = sprintf("%02d.%02d.%04d",$D->{day},$D->{month},$D->{year});
-  $A->{ObsTime}             = sprintf("%02d:%02d:%02d",$D->{hour},$D->{min},$D->{sec});
-  $A->{ObsTimeR}            = Arabic2Roman($D->{hour}<=12.?$D->{hour}:$D->{hour}-12.)
-                              .($D->{min}==0.?($D->{sec}==0?"":":"):":".Arabic2Roman($D->{min}))
-                              .($D->{sec}==0.?"":":".Arabic2Roman($D->{sec}));
-  $A->{".timestamp"}        = $D->{timestamp};
-  $A->{".timeday"}          = $D->{timeday};
-  $A->{ObsTimezone}         = $D->{zonedelta};
-  $A->{ObsDayofyear}        = $D->{dayofyear};
-  $A->{ObsWeekofyear}       = $D->{weekofyear};
-  $A->{ObsIsDST}            = $D->{isdst};
-  $A->{".isdstnoon"}        = $D->{isdstnoon};
-  $A->{ObsIsLeapyear}       = $D->{isly};
-  $A->{ObsYearRemainD}      = $D->{yearremdays};
-  $A->{ObsMonthRemainD}     = $D->{monthremdays};
-  $A->{".ObsYearProgress"}  = $D->{yearprogress};
-  $A->{".ObsMonthProgress"} = $D->{monthprogress};
-  $A->{ObsYearProgress}     = _round($A->{".ObsYearProgress"}, 2);
-  $A->{ObsMonthProgress}    = _round($A->{".ObsMonthProgress"}, 2);
-  AddToSchedule($A, 0, "ObsDate ". $A->{ObsDate})
-    if (grep (/^ObsDate/, @schedsch));
-
-  #-- Seasonal hours
-  $A->{ObsSeasonalHrsDay}   = $dayparts;
-  $A->{ObsSeasonalHrsNight} = $nightparts;
-  my $daypartlen   = $hoursofsunlight / $dayparts;
-  my $nightpartlen = $hoursofnight / $nightparts;
-  $A->{".ObsSeasonalHrLenDay"}   = $daypartlen;
-  $A->{".ObsSeasonalHrLenNight"} = $nightpartlen;
-  $A->{ObsSeasonalHrLenDay}   = HHMMSS($daypartlen);
-  $A->{ObsSeasonalHrLenNight} = HHMMSS($nightpartlen);
-
-  my $daypart;
-  my $daypartnext;
-
-  #   sunrise and sunset do not occur
-  my $daypartTNow = $D->{timeday} + 1./3600.;
-  if(
-      (!defined($sunrise) || $sunrise !~ m/^\d+/) &&
-      (!defined($sunset) || $sunset !~ m/^\d+/)
-  ) {
-    $daypartlen += $nightpartlen;
-    if ($A->{SunAlt} > 0.) {
-      $daypart = ceil($daypartTNow/$daypartlen);
-    } else {
-      $daypart = ($nightparts+1.)*-1. + ceil($daypartTNow/$daypartlen);
-    }
-  }
-  #   sunset does not occur
-  elsif ((!defined($sunset) || $sunset !~ m/^\d+/) && $daypartTNow < $sunrise) {
-    $daypart = ($dayparts+1.)*-1. + ceil($daypartTNow/$nightpartlen);
-  }
-  #   sunrise does not occur
-  elsif((!defined($sunrise) || $sunrise !~ m/^\d+/) && $daypartTNow < $sunset) {
-    $daypart = ceil($daypartTNow/$daypartlen);
-  }
-  #   sunrise or sunset do not occur
-  elsif (
-      !defined($sunrise) ||
-      $sunrise !~ m/^\d+/ ||
-      !defined($sunset) ||
-      $sunset !~ m/^\d+/
-  ) {
-    $daypartlen += $nightpartlen;
-    $daypart = ceil($daypartTNow/$daypartlen)
-      if ($A->{SunAlt} >= 0.);
-    $daypart = ($nightparts+1)*-1 + ceil($daypartTNow/$daypartlen)
-      if ($A->{SunAlt} < 0.);
-  }
-  #   very long days where sunset seems to happen before sunrise
-  elsif($sunset < $sunrise) {
-    if($D->{timeday} >= $sunrise) {
-      $daypart = ceil( ($daypartTNow-$sunrise) / $daypartlen );
-    }
-    else {
-      $daypart = ceil( ($daypartTNow-$sunset) / $nightpartlen );
-    }
-  }
-  #   regular day w/ sunrise and sunset
-  elsif ($daypartTNow < $sunrise) {  # after newCalDay but before sunrise
-    $daypart = ($nightparts+1)*-1. + ceil( ($daypartTNow+24.-$sunset) / $nightpartlen );
-  }
-  elsif($daypartTNow < $sunset) {    # after sunrise but before sunset
-    $daypart = ceil( ($daypartTNow-$sunrise) / $daypartlen );
-  }
-  else {                              # after sunset but before newCalDay
-    $daypart = ($nightparts+1)*-1. + ceil( ($daypartTNow-$sunset) / $nightpartlen );
-  }
-  my $daypartdigits = maxNum($dayparts, $nightparts) =~ tr/0-9//;
-  my $idp = $nightparts*-1. - 1.;
-  while ($idp < -1.) {
-    my $id = "-" . sprintf("%0".$daypartdigits."d", ($idp+1.)*-1.);
-    my $d = ($nightparts+1-$idp*-1.) * $nightpartlen;
-    $d += $sunset if ($sunset ne '---');
-    $d -= 24. if ($d >= 24.);
-    AddToSchedule($A, $d, "ObsSeasonalHr -" . (($idp+1.)*-1.) )
-      if (grep (/^ObsSeasonalHr/, @schedsch));
-    if ($D->{timeday} >= $d) {   # if time passed us already, we want it for tomorrow
-      if(ref($At)) {
-        $d = ($nightparts+1-$idp*-1.) * $At->{".ObsSeasonalHrLenNight"};
-        $d += $At->{".SunSet"} if ($At->{".SunSet"} ne '---');
-        $d -= 24. if ($d >= 24.);
-      } else {
-        $d = "---";
-      }
-    }
-    $A->{".ObsSeasonalHrT$id"} = $d;
-    $A->{"ObsSeasonalHrT$id"}  = $d eq '---'?$d: ($d == 0. ? ($daypart < 0. ? '00:00:00' : '---') : HHMMSS($d));
-    $idp++;
-  }
-  $idp = 0;
-  while ($idp < $dayparts) {
-    my $id = sprintf("%0".$daypartdigits."d", $idp+1.);
-    my $d = $idp * $daypartlen;
-    $d += $sunrise if ($sunrise ne '---');
-    $d -= 24. if ($d >= 24.);
-    AddToSchedule($A, $d, "ObsSeasonalHr " . ($idp+1.))
-      if (grep (/^ObsSeasonalHr/, @schedsch));
-    if ($D->{timeday} >= $d) {   # if time passed us already, we want it for tomorrow
-      if(ref($At)) {
-        $d = $idp * $At->{".ObsSeasonalHrLenDay"};
-        $d += $At->{".SunRise"} if ($At->{".SunRise"} ne '---');
-        $d -= 24. if ($d >= 24.);
-      } else {
-        $d = "---";
-      }
-    }
-    $A->{".ObsSeasonalHrT$id"} = $d;
-    $A->{"ObsSeasonalHrT$id"}  = $d eq '---'?$d: ($d == 0. ? ($daypart > 0. ? '00:00:00' : '---') : HHMMSS($d));
-    $idp++;
-  }
-  if ($daypart>0.) {
-    $daypartnext  = $daypart * $daypartlen;
-    $daypartnext += $sunrise if ($sunrise ne '---');
-  } else {
-    $daypartnext  = ($nightparts+1-$daypart*-1.) * $nightpartlen;
-    $daypartnext += $sunset if ($sunset ne '---');
-  }
-  $daypartnext -= 24. if ($daypartnext >= 24.);
-
-  $A->{".ObsSeasonalHrTNext"} = $daypartnext;
-  $A->{ObsSeasonalHrTNext}    = $daypartnext == 0. ? '00:00:00' : HHMMSS($daypartnext);
-  $A->{ObsSeasonalHr}         = $daypart;
-  $A->{ObsSeasonalHrR}        = Arabic2Roman($daypart<0?($nightparts+1.+$daypart):$daypart);
-
-  #-- Daytime
-  #--  modern classification
-  if ( ($dayparts   == 12. && $nightparts == 12.) ||
-       ($dayparts   == 12. && $daypart     > 0. && !$daypartsIsRoman) ||
-       ($nightparts == 12. && $daypart     < 0.)
-  ) {
-    my $dayphase = ($daypart<0.?12.:11.) + $daypart;
-    $A->{ObsDaytimeN} = $dayphase;
-    $A->{ObsDaytime}  = $tt->{$dayphases[$dayphase]};
-  #--  roman classification
-  } elsif ( $daypartsIsRoman ||
-            ($nightparts == 4. && $daypart < 0.)
-  ) {
-    my $dayphase = ($daypart<0.?4.:3) + $daypart;
-    $A->{ObsDaytimeN} = $dayphase;
-    $A->{ObsDaytime}  = ($daypart<0.?'Vigilia ':'Hora ') . Arabic2Roman($daypart<0?$daypart+$nightparts+1.:$daypart);
-  #--  unknown classification
-  } else {
-    $A->{ObsDaytimeN} = "---";
-    $A->{ObsDaytime}  = "---";
-  }
+  $Astro{ObsDate}             = sprintf("%02d.%02d.%04d",$Date{day},$Date{month},$Date{year});
+  $Astro{ObsTime}             = sprintf("%02d:%02d:%02d",$Date{hour},$Date{min},$Date{sec});
+  $Astro{".timestamp"}        = $Date{timestamp};
+  $Astro{".timeday"}          = $Date{timeday};
+  $Astro{ObsTimezone}         = $Date{zonedelta};
+  $Astro{ObsDayofyear}        = $Date{dayofyear};
+  $Astro{ObsIsDST}            = $Date{isdst};
 
   #-- check astro season
-  my $doj = $A->{ObsDayofyear};
+  my $doj = $Astro{ObsDayofyear};
 
   for( my $i=0;$i<4;$i++){
     my $key = $seasons[$i];
     if(   (($seasonn{$key}[0] < $seasonn{$key}[1]) &&  ($seasonn{$key}[0] <= $doj) && ($seasonn{$key}[1] >= $doj))
        || (($seasonn{$key}[0] > $seasonn{$key}[1]) && (($seasonn{$key}[0] <= $doj) || ($seasonn{$key}[1] >= $doj))) ){
-       $A->{ObsSeason}  = $tt->{$key};
-       $A->{ObsSeasonN} = $i; 
+       $Astro{ObsSeason}  = $tt->{$key};
+       $Astro{ObsSeasonN} = $i; 
        last;
     }  
-  }
-
-  #-- check meteorological season
-  for( my $i=0;$i<4;$i++){
-    my $key = $seasons[$i];
-    if(   (($seasonmn{$key}[0] < $seasonmn{$key}[1]) &&  ($seasonmn{$key}[0] <= $D->{month}) && ($seasonmn{$key}[1] >= $D->{month}))
-       || (($seasonmn{$key}[0] > $seasonmn{$key}[1]) && (($seasonmn{$key}[0] <= $D->{month}) || ($seasonmn{$key}[1] >= $D->{month}))) ){
-       $A->{ObsMeteoSeason}  = $tt->{$key};
-       $A->{ObsMeteoSeasonN} = $i;
-       last;
-    }
-  }
-
-  #-- check phenological season (for Central Europe only)
-  if( $A->{ObsLat} >= 35.0 && $A->{ObsLon} >= -11.0 &&
-      $A->{ObsLat} < 71.0 && $A->{ObsLon} < 25.0 )
-  {
-    my $pheno = 0;
-
-    #      waiting for summer
-    if ($D->{month} < 6.0) {
-      my $distObs = DistOnEarth(
-                      $A->{ObsLat},
-                      $A->{ObsLon},
-                      $seasonppos{earlyspring}[0],
-                      $seasonppos{earlyspring}[1],
-                      );
-      my $distTotal = DistOnEarth(
-                        $seasonppos{earlyspring}[0],
-                        $seasonppos{earlyspring}[1],
-                        $seasonppos{earlyfall}[0],
-                        $seasonppos{earlyfall}[1],
-                        );
-      my $timeBeg =
-        time_str2num($D->{year}.'-'.$earlyspring.' 00:00:00');
-      $timeBeg -= 86400.0   #starts 1 day earlier after 28.2. in a leap year
-        if (IsLeapYear($D->{year}) &&
-            $earlyspring =~ m/^(\d+)-(\d+)$/ &&
-            ($1==3 || $2==29)
-            );
-      my $timeNow = time_str2num(
-          $D->{year}.'-'.
-          $D->{month}.'-'.
-          $D->{day}.
-          ' 00:00:00'
-          );
-      my $progessDays = ($timeNow - $timeBeg) / 86400.0;
-
-      if ($progessDays >= 0.0) {
-        $pheno = 1; # spring begins
-        my $currDistObs = $distObs - ($progessDays * 37.5);
-        if ( $currDistObs <= $distObs * 0.4 ) {
-            $pheno = 2; # spring made 40 % of its way to observer
-            $currDistObs = $distObs - ($progessDays * 31.0);
-            if ( $currDistObs <= 0.0 ) {
-                $pheno = 3; # spring reached observer
-                my $currDistTotal = $distTotal - ($progessDays * 37.5);
-                if ( $currDistTotal <= 0.0 ) {
-                    $pheno = 4; # should be early summer already
-                }
-            }
-        }
-      }
-    }
-    #     fairly simple progress during summer
-    elsif ($D->{month} < 9.0) {
-      $pheno = 4;
-      $pheno++ if ($D->{month} >= 7.0);
-      $pheno++ if ($D->{month} == 8.0);
-    }
-
-    #     waiting for winter
-    if ($D->{month} >= 8.0 && $D->{month} < 12.0) {
-      my $distObs = DistOnEarth(
-                      $A->{ObsLat},
-                      $A->{ObsLon},
-                      $seasonppos{earlyfall}[0],
-                      $seasonppos{earlyfall}[1],
-                      );
-      my $distTotal = DistOnEarth(
-                        $seasonppos{earlyfall}[0],
-                        $seasonppos{earlyfall}[1],
-                        $seasonppos{earlyspring}[0],
-                        $seasonppos{earlyspring}[1],
-                        );
-      my $timeBeg =
-        time_str2num($D->{year}.'-'.$earlyfall.' 00:00:00');
-      $timeBeg -= 86400.0   #starts 1 day earlier in a leap year
-        if (IsLeapYear($D->{year}));
-      my $timeNow = time_str2num(
-          $D->{year}.'-'.
-          $D->{month}.'-'.
-          $D->{day}.
-          ' 00:00:00'
-          );
-      my $progessDays = ($timeNow - $timeBeg) / 86400.0;
-
-      if ($progessDays >= 0.0) {
-        $pheno = 7; # fall begins
-        my $currDistObs = $distObs - ($progessDays * 35.0);
-        if ( $currDistObs <= $distObs * 0.4 ) {
-            $pheno = 8; # fall made 40 % of its way to observer
-            $currDistObs = $distObs - ($progessDays * 29.5);
-            if ( $currDistObs <= 0.0 ) {
-                $pheno = 9; # fall reached observer
-                my $currDistTotal = $distTotal - ($progessDays * 45.0);
-                if ( $currDistTotal <= 0.0 ) {
-                    $pheno = 0; # should be winter already
-                }
-            }
-        }
-      }
-    }
-
-    $A->{ObsPhenoSeason}  = $tt->{$seasonsp[$pheno]};
-    $A->{ObsPhenoSeasonN} = $pheno;
-  } else {
-    Log3 $name,5,"[Astro] Location is out of range to calculate phenological season"
-      if (!$dayOffset);
-  }
-
-  #-- add info from 2 days before but only +- day will be useful after all
-  if (!defined($dayOffset)) {
-    $A->{"-2"}  = Compute($hash, -2, $params);  # today-2, has no tomorrow or yesterday
-    $A->{"-1"}  = Compute($hash, -1, $params);  # today-1, has tomorrow and yesterday
-  }
-
-  #-- reference for yesterday
-  my $Ay;
-  if (!defined($dayOffset) || $dayOffset == -1. || $dayOffset == 0. || $dayOffset == 1. ) {
-    my $t = (!defined($dayOffset)?0.:$dayOffset) - 1.;
-    $Ay = \%Astro unless ($t);
-    $Ay = $Astro{$t} if ($t && defined($Astro{$t}));
-  }
-
-  #-- Change indicators for event day and day before
-  $A->{ObsChangedSeason}      = 0 unless ( $A->{ObsChangedSeason} );
-  $A->{ObsChangedMeteoSeason} = 0 unless ( $A->{ObsChangedMeteoSeason} );
-  $A->{ObsChangedPhenoSeason} = 0 unless ( $A->{ObsChangedPhenoSeason} );
-  $A->{ObsChangedSunSign}     = 0 unless ( $A->{ObsChangedSunSign} );
-  $A->{ObsChangedMoonSign}    = 0 unless ( $A->{ObsChangedMoonSign} );
-  $A->{ObsChangedMoonPhaseS}  = 0 unless ( $A->{ObsChangedMoonPhaseS} );
-  $A->{ObsChangedIsDST}       = 0 unless ( $A->{ObsChangedIsDST} );
-
-  #--  Astronomical season is going to change tomorrow
-  if (   ref($At)
-      && !$At->{ObsChangedSeason}
-      && defined( $At->{ObsSeasonN} )
-      && $At->{ObsSeasonN} != $A->{ObsSeasonN} )
-  {
-      $A->{ObsChangedSeason}  = 2;
-      $At->{ObsChangedSeason} = 1;
-      AddToSchedule( $At, 0, "ObsSeason " . $At->{ObsSeason} )
-        if (grep (/^ObsSeason/, @schedsch));
-  }
-  #--  Astronomical season changed since yesterday
-  elsif (ref($Ay)
-      && !$Ay->{ObsChangedSeason}
-      && defined( $Ay->{ObsSeasonN} )
-      && $Ay->{ObsSeasonN} != $A->{ObsSeasonN} )
-  {
-      $Ay->{ObsChangedSeason} = 2;
-      $A->{ObsChangedSeason}  = 1;
-      AddToSchedule( $A, 0, "ObsSeason " . $A->{ObsSeason} )
-        if (grep (/^ObsSeason/, @schedsch));
-  }
-  #--  Meteorological season is going to change tomorrow
-  if (   ref($At)
-      && !$At->{ObsChangedMeteoSeason}
-      && defined( $At->{ObsMeteoSeasonN} )
-      && $At->{ObsMeteoSeasonN} != $A->{ObsMeteoSeasonN} )
-  {
-      $A->{ObsChangedMeteoSeason}  = 2;
-      $At->{ObsChangedMeteoSeason} = 1;
-      AddToSchedule( $At, 0, "ObsMeteoSeason " . $At->{ObsMeteoSeason} )
-        if (grep (/^ObsMeteoSeason/, @schedsch));
-  }
-  #--  Meteorological season changed since yesterday
-  elsif (ref($Ay)
-      && !$Ay->{ObsChangedMeteoSeason}
-      && defined( $Ay->{ObsMeteoSeasonN} )
-      && $Ay->{ObsMeteoSeasonN} != $A->{ObsMeteoSeasonN} )
-  {
-      $Ay->{ObsChangedMeteoSeason} = 2;
-      $A->{ObsChangedMeteoSeason}  = 1;
-      AddToSchedule( $A, 0, "ObsMeteoSeason " . $A->{ObsMeteoSeason} )
-        if (grep (/^ObsMeteoSeason/, @schedsch));
-  }
-  #--  Phenological season is going to change tomorrow
-  if (   ref($At)
-      && !$At->{ObsChangedPhenoSeason}
-      && defined( $At->{ObsPhenoSeasonN} )
-      && $At->{ObsPhenoSeasonN} != $A->{ObsPhenoSeasonN} )
-  {
-      $A->{ObsChangedPhenoSeason}  = 2;
-      $At->{ObsChangedPhenoSeason} = 1;
-      AddToSchedule( $At, 0, "ObsPhenoSeason " . $At->{ObsPhenoSeason} )
-        if (grep (/^ObsPhenoSeason/, @schedsch));
-  }
-  #--  Phenological season changed since yesterday
-  elsif (ref($Ay)
-      && !$Ay->{ObsChangedPhenoSeason}
-      && defined( $Ay->{ObsPhenoSeasonN} )
-      && $Ay->{ObsPhenoSeasonN} != $A->{ObsPhenoSeasonN} )
-  {
-      $Ay->{ObsChangedPhenoSeason} = 2;
-      $A->{ObsChangedPhenoSeason}  = 1;
-      AddToSchedule( $A, 0, "ObsPhenoSeason " . $A->{ObsPhenoSeason} )
-        if (grep (/^ObsPhenoSeason/, @schedsch));
-  }
-  #--  SunSign is going to change tomorrow
-  if (   ref($At)
-      && !$At->{ObsChangedSunSign}
-      && defined( $At->{SunSign} )
-      && $At->{SunSign} ne $A->{SunSign} )
-  {
-      $A->{ObsChangedSunSign}  = 2;
-      $At->{ObsChangedSunSign} = 1;
-      AddToSchedule( $At, 0, "SunSign " . $At->{SunSign} )
-        if (grep (/^SunSign/, @schedsch));
-  }
-  #--  SunSign changed since yesterday
-  elsif (ref($Ay)
-      && !$Ay->{ObsChangedSunSign}
-      && defined( $Ay->{SunSign} )
-      && $Ay->{SunSign} ne $A->{SunSign} )
-  {
-      $Ay->{ObsChangedSunSign} = 2;
-      $A->{ObsChangedSunSign}  = 1;
-      AddToSchedule( $A, 0, "SunSign " . $A->{SunSign} )
-        if (grep (/^SunSign/, @schedsch));
-  }
-  #--  MoonSign is going to change tomorrow
-  if (   ref($At)
-      && !$At->{ObsChangedMoonSign}
-      && defined( $At->{MoonSign} )
-      && $At->{MoonSign} ne $A->{MoonSign} )
-  {
-      $A->{ObsChangedMoonSign}  = 2;
-      $At->{ObsChangedMoonSign} = 1;
-      AddToSchedule( $At, 0, "MoonSign " . $At->{MoonSign} )
-        if (grep (/^MoonSign/, @schedsch));
-  }
-  #--  MoonSign changed since yesterday
-  elsif (ref($Ay)
-      && !$Ay->{ObsChangedMoonSign}
-      && defined( $Ay->{MoonSign} )
-      && $Ay->{MoonSign} ne $A->{MoonSign} )
-  {
-      $Ay->{ObsChangedMoonSign} = 2;
-      $A->{ObsChangedMoonSign}  = 1;
-      AddToSchedule( $A, 0, "MoonSign " . $A->{MoonSign} )
-        if (grep (/^MoonSign/, @schedsch));
-  }
-  #--  MoonPhase is going to change tomorrow
-  if (   ref($At)
-      && !$At->{ObsChangedMoonPhaseS}
-      && defined( $At->{MoonPhaseS} )
-      && $At->{MoonPhaseI} != $A->{MoonPhaseI} )
-  {
-      $A->{ObsChangedMoonPhaseS}  = 2;
-      $At->{ObsChangedMoonPhaseS} = 1;
-      AddToSchedule( $At, 0, "MoonPhaseS " . $At->{MoonPhaseS} )
-        if (grep (/^MoonPhaseS/, @schedsch));
-  }
-  #--  MoonPhase changed since yesterday
-  elsif (ref($Ay)
-      && !$Ay->{ObsChangedMoonPhaseS}
-      && defined( $Ay->{MoonPhaseS} )
-      && $Ay->{MoonPhaseI} != $A->{MoonPhaseI} )
-  {
-      $Ay->{ObsChangedMoonPhaseS} = 2;
-      $A->{ObsChangedMoonPhaseS}  = 1;
-      AddToSchedule( $A, 0, "MoonPhaseS " . $A->{MoonPhaseS} )
-        if (grep (/^MoonPhaseS/, @schedsch));
-  }
-  #--  DST is going to change tomorrow
-  if (   ref($At)
-      && !$At->{ObsChangedIsDST}
-      && defined( $At->{ObsIsDST} )
-      && $At->{".isdstnoon"} != $A->{".isdstnoon"} )
-  {
-      $A->{ObsChangedIsDST}  = 2;
-      $At->{ObsChangedIsDST} = 1;
-      AddToSchedule( $At, 0, "ObsIsDST " . $At->{ObsIsDST} )
-        if (grep (/^ObsIsDST/, @schedsch));
-  }
-  #--  DST is going to change somewhere today
-  elsif (ref($Ay)
-      && !$Ay->{ObsChangedIsDST}
-      && defined( $Ay->{ObsIsDST} )
-      && $Ay->{".isdstnoon"} != $A->{".isdstnoon"} )
-  {
-      $Ay->{ObsChangedIsDST} = 2;
-      $A->{ObsChangedIsDST}  = 1;
-      AddToSchedule( $A, 0, "ObsIsDST " . $A->{ObsIsDST} )
-        if (grep (/^ObsIsDST/, @schedsch));
-  }
-
-  #-- schedule
-  if ( defined( $A->{".schedule"} ) ) {
-
-      #-- future of tomorrow
-      if ( ref($At) ) {
-          foreach my $e ( sort { $a <=> $b } keys %{ $At->{".schedule"} } ) {
-              foreach ( @{ $At->{".schedule"}{$e} } ) {
-                AddToSchedule($A, 24, $_);
-              }
-              last;    # only add first event of next day
-          }
-      }
-
-      foreach my $e ( sort { $a <=> $b } keys %{ $A->{".schedule"} } ) {
-
-          #-- past of today
-          if ( $e <= $daypartTNow ) {
-              $A->{".ObsSchedLastT"} = $e == 24. ? 0 : $e;
-              $A->{ObsSchedLastT} =
-                $e == 0. || $e == 24. ? '00:00:00' : HHMMSS($e);
-              $A->{ObsSchedLast} = join( ", ", @{ $A->{".schedule"}{$e} } );
-              $A->{ObsSchedRecent} =
-                join( ", ", reverse @{ $A->{".schedule"}{$e} } )
-                . (
-                  defined( $A->{ObsSchedRecent} )
-                  ? ", " . $A->{ObsSchedRecent}
-                  : ""
-                );
-          }
-
-          #-- future of today
-          else {
-              unless ( defined( $A->{".ObsSchedNextT"} ) ) {
-                  $A->{".ObsSchedNextT"} = $e == 24. ? 0 : $e;
-                  $A->{ObsSchedNextT} =
-                    $e == 0. || $e == 24. ? '00:00:00' : HHMMSS($e);
-                  $A->{ObsSchedNext} = join( ", ", @{ $A->{".schedule"}{$e} } );
-              }
-              $A->{ObsSchedUpcoming} .= ", "
-                if ( defined( $A->{ObsSchedUpcoming} ) );
-              $A->{ObsSchedUpcoming} .= join( ", ", @{ $A->{".schedule"}{$e} } );
-          }
-      }
-  } else {
-    $A->{ObsSchedLast}     = "---";
-    $A->{ObsSchedLastT}    = "---";
-    $A->{ObsSchedNext}     = "---";
-    $A->{ObsSchedNextT}    = "---";
-    $A->{ObsSchedRecent}   = "---";
-    $A->{ObsSchedUpcoming} = "---";
   }
 
   delete local $ENV{TZ};
   tzset();
 
-  return $A
-    if ($dayOffset);
   return( undef );
 };
-
-########################################################################################################
-#
-# AddToSchedule - adds a time and description to the daily schedule
-#
-########################################################################################################
-sub AddToSchedule {
-    my ( $h, $e, $n ) = @_;
-    push @{ $h->{".schedule"}{$e} }, $n
-      if ( defined($e) && $e =~ m/^\d+(?:\.\d+)?$/ );
-}
 
 ########################################################################################################
 #
@@ -3802,7 +2275,8 @@ sub Moonwidget($){
   $FW_RETTYPE = "image/svg+xml";
   $FW_RET="";
   FW_pO '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="'.$size[0].'px" height="'.$size[1].'px">';
-  my $ma = Get($hash,("","text","MoonAge"));
+  my $ma = Get($hash,("","json","MoonAge"));
+  $ma =~ s/"//g;
   my $mb = Get($hash,("","text","MoonPhaseS"));
 
   my ($radius,$axis,$dir,$start,$middle);
@@ -3850,7 +2324,7 @@ sub Update($@) {
 
   return undef if (IsDisabled($name));
 
-  my $tz = AttrVal($name,"timezone",AttrVal("global","timezone",undef));
+  my $tz = AttrVal( $name, "timezone", AttrVal( "global", "timezone", undef ) );
   my $now = gettimeofday();    # conserve timestamp before recomputing
 
   SetTime(undef, $tz);
@@ -3872,7 +2346,6 @@ sub Update($@) {
           next;
       }
       my $k = ".$comp";
-      $k = '.ObsSeasonalHrTNext' if ( $comp eq 'SeasonalHr' );
       next unless ( defined( $Astro{$k} ) && $Astro{$k} =~ /^\d+(?:\.\d+)?$/ );
       my $t =
         timelocal( 0, 0, 0, ( localtime($now) )[ 3, 4, 5 ] ) + $Astro{$k} * 3600.;
@@ -3888,8 +2361,7 @@ sub Update($@) {
   }
 
   readingsBeginUpdate($hash);
-  foreach my $key (keys %Astro){   
-    next if(ref($Astro{$key}));
+  foreach my $key (keys %Astro){
     readingsBulkUpdateIfChanged($hash,$key,$Astro{$key});
   }
   readingsEndUpdate($hash,1); 
@@ -3956,13 +2428,18 @@ sub Get($@) {
 
   my $wantsreading = 0;
   my $dayOffset = 0;
-  my $tz = AttrVal($name,"timezone",AttrVal("global","timezone",undef));
+  my $tz = AttrVal( $name, "timezone", AttrVal( "global", "timezone", undef ) );
+  my $locale = AttrVal( $name, "lc_numeric", AttrVal( "global", "lc_numeric", undef ) );
+  if ($h && ref($h)) {
+    $tz = $h->{timezone} if (defined($h->{timezone}));
+    $locale = $h->{lc_numeric} if (defined($h->{lc_numeric}));
+  }
 
-  #-- fill %Astro if it is still empty after restart
+  #-- fill %Astro if it is still empty after restart to avoid warnings
   Compute($hash, undef, $h) if (scalar keys %Astro == 0);
 
   #-- second parameter may be a reading
-  if( (int(@$a)>1) && exists($Astro{$a->[1]}) && !ref($Astro{$a->[1]})) {
+  if( (int(@$a)>1) && exists($Astro{$a->[1]})) {
     $wantsreading = 1;
   }
 
@@ -4012,87 +2489,170 @@ sub Get($@) {
       return $json->encode($Astro{$a->[1]}) if (ref($json));
       return toJSON($Astro{$a->[1]});
     }else{
-      # only publish today
-      delete $Astro{2};
-      delete $Astro{1};
-      delete $Astro{"-2"};
-      delete $Astro{"-1"};
       return $json->encode(\%Astro) if (ref($json));
       return toJSON(\%Astro);
     }
-    
+
   }elsif( $a->[0] eq "text") {
     Compute($hash, undef, $h);
 
-    my $lang = uc(AttrVal($name,"language",AttrVal("global","language","EN")));
+    my $ret;
     my $old_locale = setlocale(LC_NUMERIC);
-    setlocale(LC_NUMERIC, lc($lang)."_".uc($lang).".UTF-8");
+    setlocale(LC_NUMERIC, $locale) if ($locale);
 
-    use locale;
+    use locale ':not_characters';
 
     if( $wantsreading==1 ){
-      return $Astro{$a->[1]};
-    }else{
+      my $f = "%s";
 
-      my $ret=sprintf("%s %s %s",$tt->{"date"},$Astro{ObsDate},$Astro{ObsTime});
-      $ret .= " (".$tt->{"dst"}.")" if($Astro{ObsIsDST}==1);
-      $ret .= sprintf(", %s %2d\n",$tt->{"timezone"},$Astro{ObsTimezone});
-      $ret .= sprintf("%s ".($Astro{ObsSeasonalHrsDay}>9||$Astro{ObsSeasonalHrsNight}>9?"%3d":"%2d"),
-        (($Astro{ObsSeasonalHrsDay}==12 && $Astro{ObsSeasonalHr} > 0.) ||
-          $Astro{ObsSeasonalHrsNight}==12 && $Astro{ObsSeasonalHr} < 0. ?
-          $tt->{"temporalhour"}:$tt->{"seasonalhour"}),
-        $Astro{ObsSeasonalHr});
-      $ret .= sprintf("%s%s\n",( $Astro{ObsDaytime} ne "---" ? (", ".$tt->{"dayphase"},": ".$Astro{ObsDaytime}) : ("","") ));
-      $ret .= sprintf("%s %.2f %s, %3d %s, %3d %s",$tt->{"jdate"},$Astro{ObsJD},$tt->{"days"},
-        $Astro{ObsDayofyear},$tt->{"dayofyear"},$Astro{ObsYearRemainD},
-        ($Astro{ObsYearRemainD}==1?$tt->{"dayremaining"}:$tt->{"daysremaining"}));
-      $ret .= ($Astro{ObsIsLeapyear}==1 ? sprintf(", %s\n",$tt->{"leapyear"}):"\n");
-      $ret .= sprintf("%s: %s\n",$tt->{"season"},$Astro{ObsSeason});
-      $ret .= sprintf("%s: %s\n",$tt->{"metseason"},$Astro{ObsMeteoSeason});
-      $ret .= sprintf("%s: %s\n",$tt->{"phenseason"},$Astro{ObsPhenoSeason}) if(exists($Astro{ObsPhenoSeason}));
-      $ret .= sprintf("%s %.5f° %s, %.5f° %s, %.0f m %s\n",$tt->{"coord"},$Astro{ObsLat},$tt->{"latitude"},
-        $Astro{ObsLon},$tt->{"longitude"},$Astro{ObsAlt},$tt->{"altitude"});
-      $ret .= sprintf("%s %s\n\n",$tt->{"lmst"},$Astro{ObsLMST});
+      #-- number formatting and unit
+      $f = "%2.1f°" if ( $a->[1] eq "MoonAge" );
+      $f = "%2.1f°" if ( $a->[1] eq "MoonAlt" );
+      $f = "%2.1f°" if ( $a->[1] eq "MoonAz" );
+      $f = "%2.1f°" if ( $a->[1] eq "MoonDec" );
+      $f = "%2.1f'"  if ( $a->[1] eq "MoonDiameter" );
+      $f = "%.0f m"  if ( $a->[1] eq "MoonDistance" );
+      $f = "%.0f m"  if ( $a->[1] eq "MoonDistanceObserver" );
+      $f = "%s h"    if ( $a->[1] eq "MoonHrsInvisible" );
+      $f = "%s h"    if ( $a->[1] eq "MoonHrsVisible" );
+      $f = "%2.1f°" if ( $a->[1] eq "MoonLat" );
+      $f = "%2.1f°" if ( $a->[1] eq "MoonLon" );
+      $f = "%1.2f"   if ( $a->[1] eq "MoonPhaseN" );
+      $f = "%s h"    if ( $a->[1] eq "MoonRa" );
+      $f = "%.0f m"  if ( $a->[1] eq "ObsAlt" );
+      $f = "%d."     if ( $a->[1] eq "ObsDayofyear" );
+      $f = "%2.1f°" if ( $a->[1] eq "ObsHorEvening" );
+      $f = "%2.1f°" if ( $a->[1] eq "ObsHorMorning" );
+      $f = "%.2f"    if ( $a->[1] eq "ObsJD" );
+      $f = "%.5f°"  if ( $a->[1] eq "ObsLat" );
+      $f = "%.5f°"  if ( $a->[1] eq "ObsLon" );
+      $f = "%2.1f°" if ( $a->[1] eq "SunAlt" );
+      $f = "%2.1f°" if ( $a->[1] eq "SunAz" );
+      $f = "%2.1f°" if ( $a->[1] eq "SunDec" );
+      $f = "%2.1f'"  if ( $a->[1] eq "SunDiameter" );
+      $f = "%.0f m"  if ( $a->[1] eq "SunDistance" );
+      $f = "%.0f m"  if ( $a->[1] eq "SunDistanceObserver" );
+      $f = "%s h"    if ( $a->[1] eq "SunHrsInvisible" );
+      $f = "%s h"    if ( $a->[1] eq "SunHrsVisible" );
+      $f = "%2.1f°" if ( $a->[1] eq "SunLon" );
+      $f = "%s h"    if ( $a->[1] eq "SunRa" );
+
+      #-- add text if desired
+      if ( $h && ref($h) && $h->{long} ) {
+        $f = $tt->{"twilightastro"} . " " . $f
+          if ( $a->[1] eq "AstroTwilightEvening" );
+        $f = $tt->{"twilightastro"} . " " . $f
+          if ( $a->[1] eq "AstroTwilightMorning" );
+        $f = $tt->{"twilightcivil"} . " " . $f
+          if ( $a->[1] eq "CivilTwilightEvening" );
+        $f = $tt->{"twilightcivil"} . " " . $f
+          if ( $a->[1] eq "CivilTwilightMorning" );
+        $f = $tt->{"twilightcustom"} . " " . $f
+          if ( $a->[1] eq "CustomTwilightEvening" );
+        $f = $tt->{"twilightcustom"} . " " . $f
+          if ( $a->[1] eq "CustomTwilightMorning" );
+        $f = $tt->{"age"} . " " . $f      if ( $a->[1] eq "MoonAge" );
+        $f = $tt->{"alt"} . " " . $f      if ( $a->[1] eq "MoonAlt" );
+        $f = $tt->{"az"} . " " . $f       if ( $a->[1] eq "MoonAz" );
+        $f = $tt->{"dec"} . " " . $f      if ( $a->[1] eq "MoonDec" );
+        $f = $tt->{"diameter"} . " " . $f if ( $a->[1] eq "MoonDiameter" );
+        $f = $tt->{"distance"} . " " . $f . " " . $tt->{"toce"}
+          if ( $a->[1] eq "MoonDistance" );
+        $f = $tt->{"distance"} . " " . $f . " " . $tt->{"toobs"}
+          if ( $a->[1] eq "MoonDistanceObserver" );
+        $f = $tt->{"hoursofvisibility"} . " " . $f
+          if ( $a->[1] eq "MoonHrsVisible" );
+        $f = $tt->{"latecl"} . " " . $f  if ( $a->[1] eq "MoonLat" );
+        $f = $tt->{"lonecl"} . " " . $f  if ( $a->[1] eq "MoonLon" );
+        $f = $tt->{"phase"} . " " . $f   if ( $a->[1] eq "MoonPhaseN" );
+        $f = $tt->{"phase"} . " " . $f   if ( $a->[1] eq "MoonPhaseS" );
+        $f = $tt->{"ra"} . " " . $f      if ( $a->[1] eq "MoonRa" );
+        $f = $tt->{"rise"} . " " . $f    if ( $a->[1] eq "MoonRise" );
+        $f = $tt->{"set"} . " " . $f     if ( $a->[1] eq "MoonSet" );
+        $f = $tt->{"sign"} . " " . $f    if ( $a->[1] eq "MoonSign" );
+        $f = $tt->{"transit"} . " " . $f if ( $a->[1] eq "MoonTransit" );
+        $f = $tt->{"twilightnautic"} . " " . $f
+          if ( $a->[1] eq "NauticTwilightEvening" );
+        $f = $tt->{"twilightnautic"} . " " . $f
+          if ( $a->[1] eq "NauticTwilightMorning" );
+        $f = $f . " " . $tt->{"altitude"}  if ( $a->[1] eq "ObsAlt" );
+        $f = $tt->{"date"} . " " . $f      if ( $a->[1] eq "ObsDate" );
+        $f = $f . " " . $tt->{"dayofyear"} if ( $a->[1] eq "ObsDayofyear" );
+        $f = $tt->{"alt"} . " " . $f       if ( $a->[1] eq "ObsHorEvening" );
+        $f = $tt->{"alt"} . " " . $f       if ( $a->[1] eq "ObsHorMorning" );
+        $f = ( $Astro{ $a->[1] } == 1 ? $tt->{"dst"} : "" )
+          if ( $a->[1] eq "ObsIsDST" );
+        $f = $tt->{"jdate"} . " " . $f     if ( $a->[1] eq "ObsJD" );
+        $f = $tt->{"lmst"} . " " . $f      if ( $a->[1] eq "ObsLMST" );
+        $f = $tt->{"latitude"} . " " . $f  if ( $a->[1] eq "ObsLat" );
+        $f = $tt->{"longitude"} . " " . $f if ( $a->[1] eq "ObsLon" );
+        $f = $tt->{"season"} . " " . $f    if ( $a->[1] eq "ObsSeason" );
+        $f = $tt->{"time"} . " " . $f      if ( $a->[1] eq "ObsTime" );
+        $f = $tt->{"timezone"} . " " . $f  if ( $a->[1] eq "ObsTimezone" );
+        $f = $tt->{"alt"} . " " . $f       if ( $a->[1] eq "SunAlt" );
+        $f = $tt->{"az"} . " " . $f        if ( $a->[1] eq "SunAz" );
+        $f = $tt->{"dec"} . " " . $f       if ( $a->[1] eq "SunDec" );
+        $f = $tt->{"diameter"} . " " . $f  if ( $a->[1] eq "SunDiameter" );
+        $f = $tt->{"distance"} . " " . $f . " " . $tt->{"toce"}
+          if ( $a->[1] eq "SunDistance" );
+        $f = $tt->{"distance"} . " " . $f . " " . $tt->{"toobs"}
+          if ( $a->[1] eq "SunDistanceObserver" );
+        $f = $tt->{"hoursofnight"} . " " . $f
+          if ( $a->[1] eq "SunHrsInvisible" );
+        $f = $tt->{"hoursofsunlight"} . " " . $f
+          if ( $a->[1] eq "SunHrsVisible" );
+        $f = $tt->{"lonecl"} . " " . $f  if ( $a->[1] eq "SunLon" );
+        $f = $tt->{"ra"} . " " . $f      if ( $a->[1] eq "SunRa" );
+        $f = $tt->{"rise"} . " " . $f    if ( $a->[1] eq "SunRise" );
+        $f = $tt->{"set"} . " " . $f     if ( $a->[1] eq "SunSet" );
+        $f = $tt->{"sign"} . " " . $f    if ( $a->[1] eq "SunSign" );
+        $f = $tt->{"transit"} . " " . $f if ( $a->[1] eq "SunTransit" );
+
+        $f = " ". $f ;
+
+        #-- add a separator after prefix if desired
+        $f = ":". $f if ($h->{long}>2.);
+
+        #-- add prefix for Sun/Moon if desired
+        $f = $tt->{"sun"}. $f if ($h->{long}>1. && $a->[1] =~/^Sun/);
+        $f = $tt->{"moon"}. $f if ($h->{long}>1. && $a->[1] =~/^Moon/);
+      }
+
+      $ret = sprintf($f, $Astro{$a->[1]});
+    }else{
+      $ret=sprintf("%s %s %s",$tt->{"date"},$Astro{ObsDate},$Astro{ObsTime});
+      $ret .= (($Astro{ObsIsDST}==1) ? " (".$tt->{"dst"}.")\n" : "\n" );
+      $ret .= sprintf("%s %.2f %s, %d. %s\n",$tt->{"jdate"},$Astro{ObsJD},$tt->{"days"},$Astro{ObsDayofyear},$tt->{"dayofyear"});
+      $ret .= sprintf("%s %s, %s %2d\n",$tt->{"season"},$Astro{ObsSeason},$tt->{"timezone"},$Astro{ObsTimezone});
+      $ret .= sprintf("%s %.5f° %s, %.5f° %s, %.0f m %s\n",$tt->{"coord"},$Astro{ObsLon},$tt->{"longitude"},
+        $Astro{ObsLat},$tt->{"latitude"},$Astro{ObsAlt},$tt->{"altitude"});
+      $ret .= sprintf("%s %s \n\n",$tt->{"lmst"},$Astro{ObsLMST});
       $ret .= "\n".$tt->{"sun"}."\n";
-      $ret .= sprintf("%s %s   %s %s   %s %s\n",
-        $tt->{"rise"},$Astro{SunRise},
-        $tt->{"set"},$Astro{SunSet},
-        $tt->{"transit"},$Astro{SunTransit});
+      $ret .= sprintf("%s %s   %s %s   %s %s\n",$tt->{"rise"},$Astro{SunRise},$tt->{"set"},$Astro{SunSet},$tt->{"transit"},$Astro{SunTransit});
       $ret .= sprintf("%s %s h   %s %s h\n",$tt->{"hoursofsunlight"},$Astro{SunHrsVisible},$tt->{"hoursofnight"},$Astro{SunHrsInvisible});
       $ret .= sprintf("%s %s  -  %s\n",$tt->{"twilightcivil"},$Astro{CivilTwilightMorning},$Astro{CivilTwilightEvening});
       $ret .= sprintf("%s %s  -  %s\n",$tt->{"twilightnautic"},$Astro{NauticTwilightMorning},$Astro{NauticTwilightEvening});
       $ret .= sprintf("%s %s  -  %s\n",$tt->{"twilightastro"},$Astro{AstroTwilightMorning},$Astro{AstroTwilightEvening});
-      $ret .= sprintf("%s: %.0f km %s (%.0f km %s)\n",
-        $tt->{"distance"},$Astro{SunDistance},
-        $tt->{"toce"},$Astro{SunDistanceObserver},$tt->{"toobs"});
+      $ret .= sprintf("%s: %.0f km %s (%.0f km %s)\n",$tt->{"distance"},$Astro{SunDistance},$tt->{"toce"},$Astro{SunDistanceObserver},$tt->{"toobs"});
       $ret .= sprintf("%s:  %s %2.1f°, %s %s h, %s %2.1f°; %s %2.1f°, %s %2.1f°\n",
         $tt->{"position"},$tt->{"lonecl"},$Astro{SunLon},$tt->{"ra"},
         $Astro{SunRa},$tt->{"dec"},$Astro{SunDec},$tt->{"az"},$Astro{SunAz},$tt->{"alt"},$Astro{SunAlt});
       $ret .= sprintf("%s %2.1f', %s %s\n\n",$tt->{"diameter"},$Astro{SunDiameter},$tt->{"sign"},$Astro{SunSign});
       $ret .= "\n".$tt->{"moon"}."\n";
-      $ret .= sprintf("%s %s   %s %s   %s %s\n",
-        $tt->{"rise"},$Astro{MoonRise},
-        $tt->{"set"},$Astro{MoonSet},
-        $tt->{"transit"},$Astro{MoonTransit});
+      $ret .= sprintf("%s %s   %s %s   %s %s\n",$tt->{"rise"},$Astro{MoonRise},$tt->{"set"},$Astro{MoonSet},$tt->{"transit"},$Astro{MoonTransit});
       $ret .= sprintf("%s %s\n",$tt->{"hoursofvisibility"},$Astro{MoonHrsVisible});
-      $ret .= sprintf("%s: %.0f km %s (%.0f km %s)\n",
-        $tt->{"distance"},$Astro{MoonDistance},
-        $tt->{"toce"},$Astro{MoonDistanceObserver},$tt->{"toobs"});
+      $ret .= sprintf("%s: %.0f km %s (%.0f km %s)\n",$tt->{"distance"},$Astro{MoonDistance},$tt->{"toce"},$Astro{MoonDistanceObserver},$tt->{"toobs"});
       $ret .= sprintf("%s:  %s %2.1f°, %s %2.1f°; %s %s h, %s %2.1f°; %s %2.1f°, %s %2.1f°\n",
         $tt->{"position"},$tt->{"lonecl"},$Astro{MoonLon},$tt->{"latecl"},$Astro{MoonLat},$tt->{"ra"},
         $Astro{MoonRa},$tt->{"dec"},$Astro{MoonDec},$tt->{"az"},$Astro{MoonAz},$tt->{"alt"},$Astro{MoonAlt});
-      $ret .= sprintf("%s %2.1f', %s %2.1f°, %s %1.2f = %s, %s %s\n",
-        $tt->{"diameter"},$Astro{MoonDiameter},
-        $tt->{"age"},$Astro{MoonAge},
-        $tt->{"phase"},$Astro{MoonPhaseN},$Astro{MoonPhaseS},
-        $tt->{"sign"},$Astro{MoonSign});
-
-     return $ret;
+      $ret .= sprintf("%s %2.1f',  %s %2.1f°, %s %1.2f = %s, %s %s\n",$tt->{"diameter"},
+        $Astro{MoonDiameter},$tt->{"age"},$Astro{MoonAge},$tt->{"phase"},$Astro{MoonPhaseN},$Astro{MoonPhaseS},$tt->{"sign"},$Astro{MoonSign});
     }
 
     setlocale(LC_NUMERIC, "");
     setlocale(LC_NUMERIC, $old_locale);
     no locale;
+    return $ret;
   }else {
     return "[FHEM::Astro::Get] $name with unknown argument $a->[0], choose one of ". 
     join(" ", map { defined($gets{$_})?"$_:$gets{$_}":$_ } sort keys %gets);
@@ -4123,36 +2683,23 @@ sub Get($@) {
         <ul>
         <li><i>Age</i> = angle (in degrees) of body along its track</li>
         <li><i>Az,Alt</i> = azimuth and altitude angle (in degrees) of body above horizon</li>
-        <li><i>Compass,CompassI,CompassS</i> = azimuth as point of the compass</li>
         <li><i>Dec,Ra</i> = declination (in degrees) and right ascension (in HH:MM) of body position</li>
         <li><i>HrsVisible,HrsInvisible</i> = Hours of visiblity and invisiblity of the body</li>
         <li><i>Lat,Lon</i> = latitude and longituds (in degrees) of body position</li>
         <li><i>Diameter</i> = virtual diameter (in arc minutes) of body</li>
         <li><i>Distance,DistanceObserver</i> = distance (in km) of body to center of earth or to observer</li>
         <li><i>PhaseN,PhaseS</i> = Numerical and string value for phase of body</li>
-	      <li><i>Sign</i> = Circadian sign for body along its track</li>
-	      <li><i>Rise,Transit,Set</i> = times (in HH:MM) for rise and set as well as for highest position of body</li>
+	    <li><i>Sign</i> = Circadian sign for body along its track</li>
+	    <li><i>Rise,Transit,Set</i> = times (in HH:MM) for rise and set as well as for highest position of body</li>
         </ul>
         <p>
         Readings with prefix <i>Obs</i> refer to the observer.
         In addition to some of the suffixes gives above, the following may occur:
         <ul>
-        <li><i>Date,Dayofyear,Weekofyear,YearRemainD,YearProgress,ObsMonthRemainD,ObsMonthProgress</i> = date</li>
-        <li><i>YearRemainD,YearProgress,MonthRemainD,MonthProgress</i> = progress throughout month and year</li>
-        <li><i>Daytime,DaytimeN</i> = String and numerical (0..23) value of relative daytime/nighttime, based on SeasonalHr. Counting begins after sunset.</li>
+        <li><i>Date,Dayofyear</i> = date</li>
         <li><i>JD</i> = Julian date</li>
-        <li><i>Changed*</i> = Change indicators. Value is 2 the day before the change is going to take place, 1 at the day the change has occured.</li>
-        <li><i>Season,SeasonN</i> = String and numerical (0..3) value of astrological season</li>
-        <li><i>MeteoSeason,MeteoSeasonN</i> = String and numerical (0..3) value of meteorological season</li>
-        <li><i>PhenoSeason,PhenoSeasonN</i> = String and numerical (0..9) value of phenological season</li>
-        <li><i>SchedLast,SchedLastT,SchedNext,SchedNextT</i> = Last/current event and next event</li>
-        <li><i>SchedRecent,SchedUpcoming</i> = List of recent and upcoming events today. SchedUpcoming includes the very first events at 00:00:00 of the next day at the end.</li>
-        <li><i>SeasonalHrLenDay,SeasonalHrLenNight</i> = Length of a single seasonal hour during sunlight and nighttime as defined by SeasonalHrsDay and SeasonalHrsNight</li>
-        <li><i>SeasonalHr,ObsSeasonalHrR,SeasonalHrsDay,SeasonalHrsNight</i> = Current and total seasonal hours of a full day. Values for SeasonalHr will be between -12 and 12 (actual range depends on the definition of SeasonalHrsDay and SeasonalHrsNight), but will never be 0. Positive values will occur between sunrise and sunset while negative values will occur during nighttime. Numbers will always be counting upwards, for example from 1 to 12 during daytime and from -12 to -1 during nighttime. That way switching between daytime&lt;&gt;nighttime means only to change the algebraic sign from -1 to 1 and 12 to -12 respectively.</li>
-        <li><i>SeasonalHrTNext,SeasonalHrT*</i> Calculated times for the beginning of the respective seasonal hour. SeasonalHrTNext will be set for the next upcoming seasonal hour. Hours that are in the past for today will actually show times for the next calendar day.</li>
-        <li><i>Time,TimeR,Timezone</i> obvious meaning</li>
+        <li><i>Time,Timezone</i> obvious meaning</li>
         <li><i>IsDST</i> = 1 if running on daylight savings time, 0 otherwise</li>
-        <li><i>IsLeapyear</i> = 1 if the year is a leap year, 0 otherwise</li>
         <li><i>GMST,LMST</i> = Greenwich and Local Mean Sidereal Time (in HH:MM)</li>
 	    </ul>
 	    <p>
@@ -4169,12 +2716,6 @@ sub Get($@) {
         <li>The time zone is determined automatically from the local settings of the <br/>
         operating system. If geocordinates from a different time zone are used, the results are<br/>
         not corrected automatically.</li>
-        <li>The phenological season will only be estimated if the observers position is located in Central Europe.
-        Due to its definition, a phenological season cannot be strictly calculated. It is not supposed to be 100%
-        accurate and therefore not to be used for agrarian purposes but should be close enough for other
-        home automations like heating, cooling, shading, etc.</li>
-        <li>As the relative daytime is based on temporal hours, it can only be emerged if seasonalHrs is set to 12
-        (which is the default setting).</li>
         <li>Some definitions determining the observer position are used<br/>
         from the global device, i.e.<br/>
         <ul>
@@ -4223,40 +2764,24 @@ sub Get($@) {
         <a name="Astroattr"></a>
         <h4>Attributes</h4>
         <ul>
-            <li><a name="Astro_earlyfall"></a>
-                <code>&lt;earlyfall&gt;</code>
-                <br />The early beginning of fall will set a marker to calculate all following phenological seasons until winter time.
-                      This defaults to 08-20 to begin early fall on August 20th.</li>
-            <li><a name="Astro_earlyspring"></a>
-                <code>&lt;earlyspring&gt;</code>
-                <br />The early beginning of spring will set a marker to calculate all following phenological seasons until summer time.
-                      This defaults to 02-22 to begin early spring on February 22nd.</li>
             <li><a name="Astro_interval"></a>
                 <code>&lt;interval&gt;</code>
                 <br />Update interval in seconds. The default is 3600 seconds, a value of 0 disables the periodic update.</li>
             <li><a name="Astro_language"></a>
                 <code>&lt;language&gt;</code>
                 <br />A language may be set to overwrite global attribute settings.</li>
+            <li><a name="Astro_lc_numeric"></a>
+                <code>&lt;lc_numeric&gt;</code>
+                <br />Set regional settings to format numerical values in textual output.</li>
             <li><a name="Astro_recomputeAt"></a>
                 <code>&lt;recomputeAt&gt;</code>
                 <br />Enforce recomputing values at specific event times, independant from update interval. This attribute contains a list of one or many of the following values:<br />
                       <ul>
                       <li><i>MoonRise,MoonSet,MoonTransit</i> = for moon rise, set, and transit</li>
-                      <li><i>NewDay</i> = for 00:00:00 hours of the next calendar day (some people may say midnight)</li>
-                      <li><i>SeasonalHr</i> = for the beginning of every seasonal hour</li>
+                      <li><i>NewDay</i> = for 00:00:00 hours of the next calendar day</li>
                       <li><i>SunRise,SunSet,SunTransit</i> = for sun rise, set, and transit</li>
                       <li><i>*TwilightEvening,*TwilightMorning</i> = for the respective twilight stage begin</li>
                       </ul></li>
-            <li><a name="Astro_schedule"></a>
-                <code>&lt;schedule&gt;</code>
-                <br />Define which events will be part of the schedule list. A full schedule will be generated if this attribute was not specified. This also controls the value of ObsSched* readings.</li>
-            <li><a name="Astro_seasonalHrs"></a>
-                <code>&lt;seasonalHrs&gt;</code>
-                <br />Number of total seasonal hours to divide daylight time and nighttime into (day parts).
-                      It controls the calculation of reading ObsSeasonalHr throughout a full day.
-                      The default value is 12 which corresponds to the definition of temporal hours.
-                      In case the amount of hours during nighttime shall be different, they can be defined as
-                      <code>&lt;dayHours&gt;:&lt;nightHours&gt;</code>. A value of '4' will enforce historic roman mode with implicit 12:4 settings but the Daytime to be reflected in latin notation. Defining a value of 12:4 directly will still show regular daytimes during daytime. Defining *:4 nighttime parts will always calculate Daytime in latin notation during nighttime, independant from daytime settings.</li>
             <li><a name="Astro_timezone"></a>
                 <code>&lt;timezone&gt;</code>
                 <br />A timezone may be set to overwrite global and system settings. Format may depend on your local system implementation but is likely in the format similar to <code>Europe/Berlin</code>.</li>
@@ -4304,32 +2829,23 @@ sub Get($@) {
     "astrology",
     "astronomy",
     "constellation",
-    "date",
-    "dawn",
-    "dusk",
     "moon",
-    "season",
     "sun",
     "star sign",
-    "time",
     "twilight",
     "zodiac",
     "Astrologie",
     "Astronomie",
-    "Datum",
-    "Jahreszeit",
     "Mond",
     "Sonne",
     "Sternbild",
     "Sternzeichen",
     "Tierkreiszeichen",
-    "Uhrzeit",
     "Zodiak"
   ],
   "prereqs": {
     "runtime": {
       "requires": {
-        "Encode": 0,
         "GPUtils": 0,
         "Math::Trig": 0,
         "POSIX": 0,
