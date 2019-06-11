@@ -829,7 +829,7 @@ _LoadOptionalPackages();
 sub SunRise($$$$$$$$);
 sub MoonRise($$$$$$$);
 sub SetTime(;$$);
-sub Compute($;$$);
+sub Compute($;$);
 
 ########################################################################################################
 #
@@ -1953,8 +1953,8 @@ sub SetTime (;$$) {
 # 
 ########################################################################################################
   
-sub Compute($;$$){
-  my ($hash,$dayOffset,$params) = @_;
+sub Compute($;$){
+  my ($hash,$params) = @_;
   undef %Astro;
   my $name = $hash->{NAME};
   SetTime() if (scalar keys %Date == 0); # fill %Date if it is still empty after restart to avoid warnings
@@ -1989,8 +1989,7 @@ sub Compute($;$$){
     $Astro{ObsLat}  = $attr{"global"}{"latitude"};
   }else{
     $Astro{ObsLat}  = 50.0;
-    Log3 $name,3,"[Astro] No latitude attribute set in global device, using 50.0°"
-      if (!$dayOffset);
+    Log3 $name,3,"[Astro] No latitude attribute set in global device, using 50.0°";
   }
   if( defined($params->{"longitude"}) ){
     $Astro{ObsLon}  = $params->{"longitude"};
@@ -2000,8 +1999,7 @@ sub Compute($;$$){
     $Astro{ObsLon}  = $attr{"global"}{"longitude"};
   }else{
     $Astro{ObsLon}  = 10.0;
-    Log3 $name,3,"[Astro] No longitude attribute set in global device, using 10.0°"
-      if (!$dayOffset);
+    Log3 $name,3,"[Astro] No longitude attribute set in global device, using 10.0°";
   } 
   #-- altitude of observer in meters above WGS84 ellipsoid 
   if( defined($params->{"altitude"}) ){
@@ -2012,8 +2010,7 @@ sub Compute($;$$){
     $Astro{ObsAlt}  = $attr{"global"}{"altitude"};
   }else{
     $Astro{ObsAlt}  = 0.0;
-    Log3 $name,3,"[Astro] No altitude attribute set in global device, using 0.0 m above sea level"
-      if (!$dayOffset);
+    Log3 $name,3,"[Astro] No altitude attribute set in global device, using 0.0 m above sea level";
   }
   #-- custom horizon of observer in degrees
   if( defined($params->{"horizon"}) &&
@@ -2029,8 +2026,7 @@ sub Compute($;$$){
   } else {
     $Astro{ObsHorMorning} = 0.0;
     $Astro{ObsHorEvening} = 0.0;
-    Log3 $name,5,"[Astro] No horizon attribute defined, using 0.0° for morning and evening"
-      if (!$dayOffset);
+    Log3 $name,5,"[Astro] No horizon attribute defined, using 0.0° for morning and evening";
   }
 
   #-- internal variables converted to Radians and km 
@@ -2435,7 +2431,7 @@ sub Get($@) {
   }
 
   #-- fill %Astro if it is still empty after restart to avoid warnings
-  Compute($hash, undef, $h) if (scalar keys %Astro == 0);
+  Compute($hash, $h) if (scalar keys %Astro == 0);
 
   #-- second parameter may be a reading
   if( (int(@$a)>1) && exists($Astro{$a->[1]})) {
@@ -2477,7 +2473,7 @@ sub Get($@) {
     return $VERSION;
     
   }elsif( $a->[0] eq "json") {
-    Compute($hash, undef, $h);
+    Compute($hash, $h);
 
     #-- beautify JSON at cost of performance only when debugging
     if (ref($json) && AttrVal($name,"verbose",AttrVal("global","verbose",3)) > 3.) {
@@ -2493,7 +2489,7 @@ sub Get($@) {
     }
 
   }elsif( $a->[0] eq "text") {
-    Compute($hash, undef, $h);
+    Compute($hash, $h);
 
     my $ret;
     my $old_locale = setlocale(LC_NUMERIC);
