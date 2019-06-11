@@ -2607,14 +2607,16 @@ sub Get($@) {
         $f = $tt->{"sign"} . " " . $f    if ( $a->[1] eq "SunSign" );
         $f = $tt->{"transit"} . " " . $f if ( $a->[1] eq "SunTransit" );
 
-        $f = " ". $f ;
-
-        #-- add a separator after prefix if desired
-        $f = ":". $f if ($h->{long}>2.);
-
         #-- add prefix for Sun/Moon if desired
-        $f = $tt->{"sun"}. $f if ($h->{long}>1. && $a->[1] =~/^Sun/);
-        $f = $tt->{"moon"}. $f if ($h->{long}>1. && $a->[1] =~/^Moon/);
+        if ($a->[1] =~/^Sun|Moon/) {
+          $f = " ". $f;
+
+          #-- add a separator after prefix if desired
+          $f = ":". $f if ($h->{long}>2.);
+
+          $f = $tt->{"sun"}. $f if ($h->{long}>1. && $a->[1] =~/^Sun/);
+          $f = $tt->{"moon"}. $f if ($h->{long}>1. && $a->[1] =~/^Moon/);
+        }
       }
 
       $ret = sprintf($f, $Astro{$a->[1]});
