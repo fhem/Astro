@@ -2275,8 +2275,7 @@ sub Moonwidget($){
   $FW_RETTYPE = "image/svg+xml";
   $FW_RET="";
   FW_pO '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="'.$size[0].'px" height="'.$size[1].'px">';
-  my $ma = Get($hash,("","json","MoonAge"));
-  $ma =~ s/"//g;
+  my $ma = Get($hash,("","text","MoonAge"));
   my $mb = Get($hash,("","text","MoonPhaseS"));
 
   my ($radius,$axis,$dir,$start,$middle);
@@ -2502,7 +2501,7 @@ sub Get($@) {
 
     use locale ':not_characters';
 
-    if( $wantsreading==1 ){
+    if( $wantsreading==1 && $h && ref($h) && ($h->{unit} || $h->{long})) {
       my $f = "%s";
 
       #-- number formatting and unit
@@ -2619,7 +2618,11 @@ sub Get($@) {
       }
 
       $ret = sprintf($f, $Astro{$a->[1]});
-    }else{
+    }
+    elsif( $wantsreading==1 ) {
+      $ret = $Astro{$a->[1]};
+    }
+    else {
       $ret=sprintf("%s %s %s",$tt->{"date"},$Astro{ObsDate},$Astro{ObsTime});
       $ret .= (($Astro{ObsIsDST}==1) ? " (".$tt->{"dst"}.")\n" : "\n" );
       $ret .= sprintf("%s %.2f %s, %d. %s\n",$tt->{"jdate"},$Astro{ObsJD},$tt->{"days"},$Astro{ObsDayofyear},$tt->{"dayofyear"});
@@ -2756,7 +2759,14 @@ sub Get($@) {
                 <code>get &lt;name&gt; text [&lt;reading&gt;] YYYY-MM-DD [-1|yesterday|+1|tomorrow]</code><br/>
                 <code>get &lt;name&gt; text [&lt;reading&gt;] HH:MM[:SS] [-1|yesterday|+1|tomorrow]</code><br/>
                 <code>get &lt;name&gt; text [&lt;reading&gt;] YYYY-MM-DD HH:MM[:SS] [-1|yesterday|+1|tomorrow]</code>
-                <br />returns the complete set of an individual reading of astronomical data either for the current time, or for a day and time given in the argument. <code>yesterday</code>, <code>tomorrow</code> or any other integer number may be given at the end to get data relative to the given day and time.</li>            
+                <br />returns the complete set of an individual reading of astronomical data either for the current time, or for a day and time given in the argument. <code>yesterday</code>, <code>tomorrow</code> or any other integer number may be given at the end to get data relative to the given day and time.<br/>
+                The return value may be formatted and/or labeled by adding one or more of the following key=value pairs to the request:
+                      <ul>
+                      <li><i>unit=1</i> = Will add a unit to numerical values. Depending on attribute lc_numeric, the decimal separator will be in regional format as well.</li>
+                      <li><i>long=1</i> = A describtive label will be added to the value.</li>
+                      <li><i>long=2</i> = Same as long=1 but a prefix for Sun or Moon will be added as a prefix.</li>
+                      <li><i>long=3</i> = Same as long=2 but <code>&lt;: &gt;</code> will be used as an additional separator.</li>
+                      </ul></li>
             <li><a name="Astro_version"></a>
                 <code>get &lt;name&gt; version</code>
                 <br />Display the version of the module</li>             
