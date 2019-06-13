@@ -2652,6 +2652,7 @@ sub FormatReading($$;$) {
       $f .= "."  if ( $r eq "ObsDayofyear" );
       $f .= "°" if ( $r eq "ObsHorEvening" );
       $f .= "°" if ( $r eq "ObsHorMorning" );
+      $f .= " ". $tt->{"days"}  if ( $r eq "ObsJD" );
       $f .= "°" if ( $r eq "ObsLat" );
       $f .= "°" if ( $r eq "ObsLon" );
       $f .= "°" if ( $r eq "SunAlt" );
@@ -2711,7 +2712,7 @@ sub FormatReading($$;$) {
       $f = $tt->{"alt"} . " " . $f if ( $r eq "ObsHorMorning" );
       $f = ( $Astro{$r} == 1. ? $tt->{"dst"} : $tt->{"nt"} )
         if ( $r eq "ObsIsDST" );
-      $f = $tt->{"jdate"} . " " . $f." ". $tt->{"days"}     if ( $r eq "ObsJD" );
+      $f = $tt->{"jdate"} . " " . $f     if ( $r eq "ObsJD" );
       $f = $tt->{"lmst"} . " " . $f      if ( $r eq "ObsLMST" );
       $f = $f ." ".$tt->{"latitude"}  if ( $r eq "ObsLat" );
       $f = $f. " ".$tt->{"longitude"} if ( $r eq "ObsLon" );
