@@ -39,6 +39,7 @@ use GPUtils qw(GP_Import);
 use Math::Trig;
 use Time::HiRes qw(gettimeofday);
 use Time::Local;
+use UConv;
 #use Data::Dumper;
 
 my $DEG = pi/180.0;
@@ -201,7 +202,7 @@ our %transtable = (
         "dec"               => "Deklination",
         "az"                => "Azimut",
         "alt"               => "Horizontwinkel",
-        "age"               => "Winkel",
+        "age"               => "Alter",
         "phase"             => "Phase",
         "rise"              => "Aufgang",
         "set"               => "Untergang",
@@ -300,7 +301,7 @@ our %transtable = (
         "dec"               => "Declinación",
         "az"                => "Azimut",
         "alt"               => "Ángulo horizonte",
-        "age"               => "Ángulo",
+        "age"               => "Años",
         "rise"              => "Salida",
         "set"               => "Puesta",
         "transit"           => "Culminación",
@@ -398,7 +399,7 @@ our %transtable = (
         "dec"               => "Déclinaison",
         "az"                => "Azimut",
         "alt"               => "Angle horizon",
-        "age"               => "Angle",
+        "age"               => "Âge",
         "rise"              => "Lever",
         "set"               => "Coucher",
         "transit"           => "Culmination",
@@ -496,7 +497,7 @@ our %transtable = (
         "dec"               => "Declinazione",
         "az"                => "Azimut",
         "alt"               => "Angolo di orizzonte",
-        "age"               => "Angolo",
+        "age"               => "Età",
         "rise"              => "Crescente",
         "set"               => "Affondamento",
         "transit"           => "Culmine",
@@ -594,7 +595,7 @@ our %transtable = (
         "dec"               => "Declinatie",
         "az"                => "Azimuth",
         "alt"               => "Horizon Angle",
-        "age"               => "Angle",
+        "age"               => "Leeftijd",
         "rise"              => "Opkomst",
         "set"               => "Ondergang",
         "transit"           => "Culminatie",
@@ -692,7 +693,7 @@ our %transtable = (
         "dec"               => "Deklinacja",
         "az"                => "Azymut",
         "alt"               => "Kąt horyzont",
-        "age"               => "Kąt",
+        "age"               => "Wiek",
         "rise"              => "Wschód",
         "set"               => "Zachód",
         "transit"           => "Kulminacja",
@@ -2372,6 +2373,177 @@ sub Update($@) {
 
 ########################################################################################################
 #
+# FormatReading - Convert a reading into text format
+#
+#  Parameter r = reading name, h = parameter hash, locale = locale string
+#
+########################################################################################################
+
+sub FormatReading($$;$) {
+  my ( $r, $h, $locale ) = @_;
+  my $ret;
+
+  my $f = "%s";
+
+  #-- number formatting
+  $f = "%2.1f" if ( $r eq "MoonAge" );
+  $f = "%2.1f" if ( $r eq "MoonAlt" );
+  $f = "%2.1f" if ( $r eq "MoonAz" );
+  $f = "%2.1f" if ( $r eq "MoonDec" );
+  $f = "%2.1f" if ( $r eq "MoonDiameter" );
+  $f = "%.0f"  if ( $r eq "MoonDistance" );
+  $f = "%.0f"  if ( $r eq "MoonDistanceObserver" );
+  $f = "%2.1f" if ( $r eq "MoonLat" );
+  $f = "%2.1f" if ( $r eq "MoonLon" );
+  $f = "%1.2f" if ( $r eq "MoonPhaseN" );
+  $f = "%.0f"  if ( $r eq "ObsAlt" );
+  $f = "%d"    if ( $r eq "ObsDayofyear" );
+  $f = "%2.1f" if ( $r eq "ObsHorEvening" );
+  $f = "%2.1f" if ( $r eq "ObsHorMorning" );
+  $f = "%.2f"  if ( $r eq "ObsJD" );
+  $f = "%.5f"  if ( $r eq "ObsLat" );
+  $f = "%.5f"  if ( $r eq "ObsLon" );
+  $f = "%2d"   if ( $r eq "ObsTimezone" );
+  $f = "%2.1f" if ( $r eq "SunAlt" );
+  $f = "%2.1f" if ( $r eq "SunAz" );
+  $f = "%2.1f" if ( $r eq "SunDec" );
+  $f = "%2.1f" if ( $r eq "SunDiameter" );
+  $f = "%.0f"  if ( $r eq "SunDistance" );
+  $f = "%.0f"  if ( $r eq "SunDistanceObserver" );
+  $f = "%2.1f" if ( $r eq "SunLon" );
+
+  $ret = sprintf( $f, $Astro{$r} );
+  $ret = UConv::decimal_mark( $ret, $locale );
+
+  if ( $h && ref($h) ) {
+
+    #-- add unit if desired
+    if ( $h->{unit}
+        || ( $h->{long} && ( !defined( $h->{unit} ) || $h->{unit} ne "0" ) )
+      )
+    {
+      $ret .= "°"                if ( $r eq "MoonAge" );
+      $ret .= "°"                if ( $r eq "MoonAlt" );
+      $ret .= "°"                if ( $r eq "MoonAz" );
+      $ret .= "°"                if ( $r eq "MoonDec" );
+      $ret .= "'"                 if ( $r eq "MoonDiameter" );
+      $ret .= " km"               if ( $r eq "MoonDistance" );
+      $ret .= " km"               if ( $r eq "MoonDistanceObserver" );
+      $ret .= " h"                if ( $r eq "MoonHrsInvisible" );
+      $ret .= " h"                if ( $r eq "MoonHrsVisible" );
+      $ret .= "°"                if ( $r eq "MoonLat" );
+      $ret .= "°"                if ( $r eq "MoonLon" );
+      $ret .= " h"                if ( $r eq "MoonRa" );
+      $ret .= " m"                if ( $r eq "ObsAlt" );
+      $ret .= "."                 if ( $r eq "ObsDayofyear" );
+      $ret .= "°"                if ( $r eq "ObsHorEvening" );
+      $ret .= "°"                if ( $r eq "ObsHorMorning" );
+      $ret .= " " . $tt->{"days"} if ( $r eq "ObsJD" );
+      $ret .= "°"                if ( $r eq "ObsLat" );
+      $ret .= "°"                if ( $r eq "ObsLon" );
+      $ret .= "°"                if ( $r eq "SunAlt" );
+      $ret .= "°"                if ( $r eq "SunAz" );
+      $ret .= "°"                if ( $r eq "SunDec" );
+      $ret .= "'"                 if ( $r eq "SunDiameter" );
+      $ret .= " km"               if ( $r eq "SunDistance" );
+      $ret .= " km"               if ( $r eq "SunDistanceObserver" );
+      $ret .= " h"                if ( $r eq "SunHrsInvisible" );
+      $ret .= " h"                if ( $r eq "SunHrsVisible" );
+      $ret .= "°"                if ( $r eq "SunLon" );
+      $ret .= " h"                if ( $r eq "SunRa" );
+    }
+
+    #-- add text if desired
+    if ( $h->{long} ) {
+      $ret = $tt->{"twilightastro"} . " " . $ret
+        if ( $r eq "AstroTwilightEvening" );
+      $ret = $tt->{"twilightastro"} . " " . $ret
+        if ( $r eq "AstroTwilightMorning" );
+      $ret = $tt->{"twilightcivil"} . " " . $ret
+        if ( $r eq "CivilTwilightEvening" );
+      $ret = $tt->{"twilightcivil"} . " " . $ret
+        if ( $r eq "CivilTwilightMorning" );
+      $ret = $tt->{"twilightcustom"} . " " . $ret
+        if ( $r eq "CustomTwilightEvening" );
+      $ret = $tt->{"twilightcustom"} . " " . $ret
+        if ( $r eq "CustomTwilightMorning" );
+      $ret = $tt->{"age"} . " " . $ret      if ( $r eq "MoonAge" );
+      $ret = $tt->{"alt"} . " " . $ret      if ( $r eq "MoonAlt" );
+      $ret = $tt->{"az"} . " " . $ret       if ( $r eq "MoonAz" );
+      $ret = $tt->{"dec"} . " " . $ret      if ( $r eq "MoonDec" );
+      $ret = $tt->{"diameter"} . " " . $ret if ( $r eq "MoonDiameter" );
+      $ret = $ret . " " . $tt->{"toce"}
+        if ( $r eq "MoonDistance" );
+      $ret = $ret . " " . $tt->{"toobs"}
+        if ( $r eq "MoonDistanceObserver" );
+      $ret = $tt->{"hoursofvisibility"} . " " . $ret
+        if ( $r eq "MoonHrsVisible" );
+      $ret = $tt->{"latecl"} . " " . $ret  if ( $r eq "MoonLat" );
+      $ret = $tt->{"lonecl"} . " " . $ret  if ( $r eq "MoonLon" );
+      $ret = $tt->{"phase"} . " " . $ret   if ( $r eq "MoonPhaseN" );
+      $ret = $tt->{"phase"} . " " . $ret   if ( $r eq "MoonPhaseS" );
+      $ret = $tt->{"ra"} . " " . $ret      if ( $r eq "MoonRa" );
+      $ret = $tt->{"rise"} . " " . $ret    if ( $r eq "MoonRise" );
+      $ret = $tt->{"set"} . " " . $ret     if ( $r eq "MoonSet" );
+      $ret = $tt->{"sign"} . " " . $ret    if ( $r eq "MoonSign" );
+      $ret = $tt->{"transit"} . " " . $ret if ( $r eq "MoonTransit" );
+      $ret = $tt->{"twilightnautic"} . " " . $ret
+        if ( $r eq "NauticTwilightEvening" );
+      $ret = $tt->{"twilightnautic"} . " " . $ret
+        if ( $r eq "NauticTwilightMorning" );
+      $ret = $ret . " " . $tt->{"altitude"}  if ( $r eq "ObsAlt" );
+      $ret = $tt->{"date"} . " " . $ret      if ( $r eq "ObsDate" );
+      $ret = $ret . " " . $tt->{"dayofyear"} if ( $r eq "ObsDayofyear" );
+      $ret = $tt->{"alt"} . " " . $ret       if ( $r eq "ObsHorEvening" );
+      $ret = $tt->{"alt"} . " " . $ret       if ( $r eq "ObsHorMorning" );
+      $ret = ( $Astro{$r} == 1. ? $tt->{"dst"} : $tt->{"nt"} )
+        if ( $r eq "ObsIsDST" );
+      $ret = $tt->{"jdate"} . " " . $ret     if ( $r eq "ObsJD" );
+      $ret = $tt->{"lmst"} . " " . $ret      if ( $r eq "ObsLMST" );
+      $ret = $ret . " " . $tt->{"latitude"}  if ( $r eq "ObsLat" );
+      $ret = $ret . " " . $tt->{"longitude"} if ( $r eq "ObsLon" );
+      $ret = $tt->{"season"} . " " . $ret    if ( $r eq "ObsSeason" );
+      $ret = $tt->{"time"} . " " . $ret      if ( $r eq "ObsTime" );
+      $ret = $tt->{"timezone"} . " " . $ret  if ( $r eq "ObsTimezone" );
+      $ret = $tt->{"alt"} . " " . $ret       if ( $r eq "SunAlt" );
+      $ret = $tt->{"az"} . " " . $ret        if ( $r eq "SunAz" );
+      $ret = $tt->{"dec"} . " " . $ret       if ( $r eq "SunDec" );
+      $ret = $tt->{"diameter"} . " " . $ret  if ( $r eq "SunDiameter" );
+      $ret = $ret . " " . $tt->{"toce"}
+        if ( $r eq "SunDistance" );
+      $ret = $ret . " " . $tt->{"toobs"}
+        if ( $r eq "SunDistanceObserver" );
+      $ret = $tt->{"hoursofnight"} . " " . $ret
+        if ( $r eq "SunHrsInvisible" );
+      $ret = $tt->{"hoursofsunlight"} . " " . $ret
+        if ( $r eq "SunHrsVisible" );
+      $ret = $tt->{"lonecl"} . " " . $ret  if ( $r eq "SunLon" );
+      $ret = $tt->{"ra"} . " " . $ret      if ( $r eq "SunRa" );
+      $ret = $tt->{"rise"} . " " . $ret    if ( $r eq "SunRise" );
+      $ret = $tt->{"set"} . " " . $ret     if ( $r eq "SunSet" );
+      $ret = $tt->{"sign"} . " " . $ret    if ( $r eq "SunSign" );
+      $ret = $tt->{"transit"} . " " . $ret if ( $r eq "SunTransit" );
+
+      #-- add prefix for Sun/Moon if desired
+      if ( $h->{long} > 1. && $r =~ /^Sun|Moon/ ) {
+        $ret = " " . $ret;
+
+        #-- add a separator after prefix if desired
+        $ret = ":" . $ret if ( $h->{long} > 2. );
+
+        $ret = $tt->{"sun"} . $ret
+          if ( $r =~ /^Sun/ );
+        $ret = $tt->{"moon"} . $ret
+          if ( $r =~ /^Moon/ );
+      }
+    }
+  }
+
+  return $ret;
+}
+
+########################################################################################################
+#
 # Set - Implements SetFn function 
 #
 #  Parameter hash = hash of device addressed, a = array of arguments, h = hash of parameters
@@ -2585,182 +2757,6 @@ sub Get($@) {
   }
 }
 
-########################################################################################################
-#
-# FormatReading - Convert a reading into text format
-#
-#  Parameter r = reading name, h = parameter hash, locale = locale string
-#
-########################################################################################################
-
-sub FormatReading($$;$) {
-  my ( $r, $h, $locale ) = @_;
-  my $f = "%s";
-
-  my $ret;
-  my $old_locale = setlocale(LC_NUMERIC);
-  setlocale(LC_NUMERIC, $locale) if ($locale);
-
-  use locale ':not_characters';
-
-  #-- number formatting
-  $f = "%2.1f" if ( $r eq "MoonAge" );
-  $f = "%2.1f" if ( $r eq "MoonAlt" );
-  $f = "%2.1f" if ( $r eq "MoonAz" );
-  $f = "%2.1f" if ( $r eq "MoonDec" );
-  $f = "%2.1f" if ( $r eq "MoonDiameter" );
-  $f = "%.0f"  if ( $r eq "MoonDistance" );
-  $f = "%.0f"  if ( $r eq "MoonDistanceObserver" );
-  $f = "%2.1f" if ( $r eq "MoonLat" );
-  $f = "%2.1f" if ( $r eq "MoonLon" );
-  $f = "%1.2f" if ( $r eq "MoonPhaseN" );
-  $f = "%.0f"  if ( $r eq "ObsAlt" );
-  $f = "%d"    if ( $r eq "ObsDayofyear" );
-  $f = "%2.1f" if ( $r eq "ObsHorEvening" );
-  $f = "%2.1f" if ( $r eq "ObsHorMorning" );
-  $f = "%.2f"  if ( $r eq "ObsJD" );
-  $f = "%.5f"  if ( $r eq "ObsLat" );
-  $f = "%.5f"  if ( $r eq "ObsLon" );
-  $f = "%2d"   if ( $r eq "ObsTimezone" );  
-  $f = "%2.1f" if ( $r eq "SunAlt" );
-  $f = "%2.1f" if ( $r eq "SunAz" );
-  $f = "%2.1f" if ( $r eq "SunDec" );
-  $f = "%2.1f" if ( $r eq "SunDiameter" );
-  $f = "%.0f"  if ( $r eq "SunDistance" );
-  $f = "%.0f"  if ( $r eq "SunDistanceObserver" );
-  $f = "%2.1f" if ( $r eq "SunLon" );
-
-  if ( $h && ref($h) ) {
-
-    #-- add unit if desired
-    if ( $h->{unit}
-        || ( $h->{long} && ( !defined( $h->{unit} ) || $h->{unit} ne "0" ) ) )
-    {
-      $f .= "°" if ( $r eq "MoonAge" );
-      $f .= "°" if ( $r eq "MoonAlt" );
-      $f .= "°" if ( $r eq "MoonAz" );
-      $f .= "°" if ( $r eq "MoonDec" );
-      $f .= "'"  if ( $r eq "MoonDiameter" );
-      $f .= " km" if ( $r eq "MoonDistance" );
-      $f .= " km" if ( $r eq "MoonDistanceObserver" );
-      $f .= " h" if ( $r eq "MoonHrsInvisible" );
-      $f .= " h" if ( $r eq "MoonHrsVisible" );
-      $f .= "°" if ( $r eq "MoonLat" );
-      $f .= "°" if ( $r eq "MoonLon" );
-      $f .= " h" if ( $r eq "MoonRa" );
-      $f .= " m" if ( $r eq "ObsAlt" );
-      $f .= "."  if ( $r eq "ObsDayofyear" );
-      $f .= "°" if ( $r eq "ObsHorEvening" );
-      $f .= "°" if ( $r eq "ObsHorMorning" );
-      $f .= " ". $tt->{"days"}  if ( $r eq "ObsJD" );
-      $f .= "°" if ( $r eq "ObsLat" );
-      $f .= "°" if ( $r eq "ObsLon" );
-      $f .= "°" if ( $r eq "SunAlt" );
-      $f .= "°" if ( $r eq "SunAz" );
-      $f .= "°" if ( $r eq "SunDec" );
-      $f .= "'"  if ( $r eq "SunDiameter" );
-      $f .= " km" if ( $r eq "SunDistance" );
-      $f .= " km" if ( $r eq "SunDistanceObserver" );
-      $f .= " h" if ( $r eq "SunHrsInvisible" );
-      $f .= " h" if ( $r eq "SunHrsVisible" );
-      $f .= "°" if ( $r eq "SunLon" );
-      $f .= " h" if ( $r eq "SunRa" );
-    }
-
-    #-- add text if desired
-    if ( $h->{long} ) {
-      $f = $tt->{"twilightastro"} . " " . $f
-        if ( $r eq "AstroTwilightEvening" );
-      $f = $tt->{"twilightastro"} . " " . $f
-        if ( $r eq "AstroTwilightMorning" );
-      $f = $tt->{"twilightcivil"} . " " . $f
-        if ( $r eq "CivilTwilightEvening" );
-      $f = $tt->{"twilightcivil"} . " " . $f
-        if ( $r eq "CivilTwilightMorning" );
-      $f = $tt->{"twilightcustom"} . " " . $f
-        if ( $r eq "CustomTwilightEvening" );
-      $f = $tt->{"twilightcustom"} . " " . $f
-        if ( $r eq "CustomTwilightMorning" );
-      $f = $tt->{"age"} . " " . $f      if ( $r eq "MoonAge" );
-      $f = $tt->{"alt"} . " " . $f      if ( $r eq "MoonAlt" );
-      $f = $tt->{"az"} . " " . $f       if ( $r eq "MoonAz" );
-      $f = $tt->{"dec"} . " " . $f      if ( $r eq "MoonDec" );
-      $f = $tt->{"diameter"} . " " . $f if ( $r eq "MoonDiameter" );
-      $f = $f . " " . $tt->{"toce"}
-        if ( $r eq "MoonDistance" );
-      $f = $f . " " . $tt->{"toobs"}
-        if ( $r eq "MoonDistanceObserver" );
-      $f = $tt->{"hoursofvisibility"} . " " . $f
-        if ( $r eq "MoonHrsVisible" );
-      $f = $tt->{"latecl"} . " " . $f  if ( $r eq "MoonLat" );
-      $f = $tt->{"lonecl"} . " " . $f  if ( $r eq "MoonLon" );
-      $f = $tt->{"phase"} . " " . $f   if ( $r eq "MoonPhaseN" );
-      $f = $tt->{"phase"} . " " . $f   if ( $r eq "MoonPhaseS" );
-      $f = $tt->{"ra"} . " " . $f      if ( $r eq "MoonRa" );
-      $f = $tt->{"rise"} . " " . $f    if ( $r eq "MoonRise" );
-      $f = $tt->{"set"} . " " . $f     if ( $r eq "MoonSet" );
-      $f = $tt->{"sign"} . " " . $f    if ( $r eq "MoonSign" );
-      $f = $tt->{"transit"} . " " . $f if ( $r eq "MoonTransit" );
-      $f = $tt->{"twilightnautic"} . " " . $f
-        if ( $r eq "NauticTwilightEvening" );
-      $f = $tt->{"twilightnautic"} . " " . $f
-        if ( $r eq "NauticTwilightMorning" );
-      $f = $f . " " . $tt->{"altitude"}  if ( $r eq "ObsAlt" );
-      $f = $tt->{"date"} . " " . $f      if ( $r eq "ObsDate" );
-      $f = $f . " " . $tt->{"dayofyear"} if ( $r eq "ObsDayofyear" );
-      $f = $tt->{"alt"} . " " . $f if ( $r eq "ObsHorEvening" );
-      $f = $tt->{"alt"} . " " . $f if ( $r eq "ObsHorMorning" );
-      $f = ( $Astro{$r} == 1. ? $tt->{"dst"} : $tt->{"nt"} )
-        if ( $r eq "ObsIsDST" );
-      $f = $tt->{"jdate"} . " " . $f     if ( $r eq "ObsJD" );
-      $f = $tt->{"lmst"} . " " . $f      if ( $r eq "ObsLMST" );
-      $f = $f ." ".$tt->{"latitude"}  if ( $r eq "ObsLat" );
-      $f = $f. " ".$tt->{"longitude"} if ( $r eq "ObsLon" );
-      $f = $tt->{"season"} . " " . $f    if ( $r eq "ObsSeason" );
-      $f = $tt->{"time"} . " " . $f      if ( $r eq "ObsTime" );
-      $f = $tt->{"timezone"} . " " . $f  if ( $r eq "ObsTimezone" );
-      $f = $tt->{"alt"} . " " . $f       if ( $r eq "SunAlt" );
-      $f = $tt->{"az"} . " " . $f        if ( $r eq "SunAz" );
-      $f = $tt->{"dec"} . " " . $f       if ( $r eq "SunDec" );
-      $f = $tt->{"diameter"} . " " . $f  if ( $r eq "SunDiameter" );
-      $f = $f . " " . $tt->{"toce"}
-        if ( $r eq "SunDistance" );
-      $f = $f . " " . $tt->{"toobs"}
-        if ( $r eq "SunDistanceObserver" );
-      $f = $tt->{"hoursofnight"} . " " . $f
-        if ( $r eq "SunHrsInvisible" );
-      $f = $tt->{"hoursofsunlight"} . " " . $f
-        if ( $r eq "SunHrsVisible" );
-      $f = $tt->{"lonecl"} . " " . $f  if ( $r eq "SunLon" );
-      $f = $tt->{"ra"} . " " . $f      if ( $r eq "SunRa" );
-      $f = $tt->{"rise"} . " " . $f    if ( $r eq "SunRise" );
-      $f = $tt->{"set"} . " " . $f     if ( $r eq "SunSet" );
-      $f = $tt->{"sign"} . " " . $f    if ( $r eq "SunSign" );
-      $f = $tt->{"transit"} . " " . $f if ( $r eq "SunTransit" );
-
-      #-- add prefix for Sun/Moon if desired
-      if ( $h->{long} > 1. && $r =~ /^Sun|Moon/ ) {
-          $f = " " . $f;
-
-          #-- add a separator after prefix if desired
-          $f = ":" . $f if ( $h->{long} > 2. );
-
-          $f = $tt->{"sun"} . $f
-            if ( $r =~ /^Sun/ );
-          $f = $tt->{"moon"} . $f
-            if ( $r =~ /^Moon/ );
-      }
-    }
-  }
-
-  $ret = ($f =~ m/%/ ? sprintf($f, $Astro{$r}) : $f);
-
-  setlocale(LC_NUMERIC, "");
-  setlocale(LC_NUMERIC, $old_locale);
-  no locale;
-  return $ret;
-}
-
 1;
 
 =pod
@@ -2960,7 +2956,6 @@ sub FormatReading($$;$) {
         "POSIX": 0,
         "Time::HiRes": 0,
         "Time::Local": 0,
-        "locale": 0,
         "strict": 0,
         "warnings": 0
       },
