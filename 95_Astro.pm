@@ -835,7 +835,7 @@ sub Compute($;$);
 #
 # Initialize 
 # 
-# Parameter hash = hash of device addressed 
+#  Parameter hash = hash of device addressed 
 #
 ########################################################################################################
 
@@ -867,7 +867,7 @@ sub Initialize ($) {
 #
 # Define - Implements DefFn function
 # 
-# Parameter hash = hash of device addressed, def = definition string
+#  Parameter hash = hash of device addressed, a = array of arguments, h = hash of parameters
 #
 ########################################################################################################
 
@@ -897,7 +897,7 @@ sub Define ($@) {
 #
 # Undef - Implements Undef function
 # 
-# Parameter hash = hash of device addressed, def = definition string
+#  Parameter hash = hash of device addressed, arg = array of arguments
 #
 ########################################################################################################
 
@@ -913,7 +913,7 @@ sub Undef ($$) {
 #
 # Notify - Implements Notify function
 # 
-# Parameter hash = hash of device addressed, dev = hash of device that triggered notification
+#  Parameter hash = hash of device addressed, dev = hash of device that triggered notification
 #
 ########################################################################################################
 
@@ -961,7 +961,7 @@ sub Notify ($$) {
 #
 # Attr - Implements Attr function
 # 
-# Parameter hash = hash of device addressed, ???
+#  Parameter do = action, name = name of device, key = attribute name, value = attribute value
 #
 ########################################################################################################
 
@@ -2248,7 +2248,7 @@ sub Compute($;$){
 #
 # Moonwidget - SVG picture of the moon 
 #
-#  Parameter hash = hash of the bus master a = argument array
+#  Parameter arg = argument array
 #
 ########################################################################################################
 
@@ -2306,7 +2306,7 @@ sub Moonwidget($){
 #
 # Update - Update readings 
 #
-#  Parameter hash = hash of the bus master a = argument array
+#  Parameter hash = hash of the bus master
 #
 ########################################################################################################
 
@@ -2367,7 +2367,7 @@ sub Update($@) {
 #
 # Set - Implements SetFn function 
 #
-#  Parameter hash = hash of the bus master a = argument array
+#  Parameter hash = hash of device addressed, a = array of arguments, h = hash of parameters
 #
 ########################################################################################################
 
@@ -2490,174 +2490,267 @@ sub Get($@) {
 
   }elsif( $a->[0] eq "text") {
     Compute($hash, $h);
-
     my $ret;
-    my $old_locale = setlocale(LC_NUMERIC);
-    setlocale(LC_NUMERIC, $locale) if ($locale);
 
-    use locale ':not_characters';
-
-    if( $wantsreading==1 && $h && ref($h) && ($h->{unit} || $h->{long})) {
-      my $f = "%s";
-
-      #-- number formatting and unit
-      $f = "%2.1f°" if ( $a->[1] eq "MoonAge" );
-      $f = "%2.1f°" if ( $a->[1] eq "MoonAlt" );
-      $f = "%2.1f°" if ( $a->[1] eq "MoonAz" );
-      $f = "%2.1f°" if ( $a->[1] eq "MoonDec" );
-      $f = "%2.1f'"  if ( $a->[1] eq "MoonDiameter" );
-      $f = "%.0f m"  if ( $a->[1] eq "MoonDistance" );
-      $f = "%.0f m"  if ( $a->[1] eq "MoonDistanceObserver" );
-      $f = "%s h"    if ( $a->[1] eq "MoonHrsInvisible" );
-      $f = "%s h"    if ( $a->[1] eq "MoonHrsVisible" );
-      $f = "%2.1f°" if ( $a->[1] eq "MoonLat" );
-      $f = "%2.1f°" if ( $a->[1] eq "MoonLon" );
-      $f = "%1.2f"   if ( $a->[1] eq "MoonPhaseN" );
-      $f = "%s h"    if ( $a->[1] eq "MoonRa" );
-      $f = "%.0f m"  if ( $a->[1] eq "ObsAlt" );
-      $f = "%d."     if ( $a->[1] eq "ObsDayofyear" );
-      $f = "%2.1f°" if ( $a->[1] eq "ObsHorEvening" );
-      $f = "%2.1f°" if ( $a->[1] eq "ObsHorMorning" );
-      $f = "%.2f"    if ( $a->[1] eq "ObsJD" );
-      $f = "%.5f°"  if ( $a->[1] eq "ObsLat" );
-      $f = "%.5f°"  if ( $a->[1] eq "ObsLon" );
-      $f = "%2.1f°" if ( $a->[1] eq "SunAlt" );
-      $f = "%2.1f°" if ( $a->[1] eq "SunAz" );
-      $f = "%2.1f°" if ( $a->[1] eq "SunDec" );
-      $f = "%2.1f'"  if ( $a->[1] eq "SunDiameter" );
-      $f = "%.0f m"  if ( $a->[1] eq "SunDistance" );
-      $f = "%.0f m"  if ( $a->[1] eq "SunDistanceObserver" );
-      $f = "%s h"    if ( $a->[1] eq "SunHrsInvisible" );
-      $f = "%s h"    if ( $a->[1] eq "SunHrsVisible" );
-      $f = "%2.1f°" if ( $a->[1] eq "SunLon" );
-      $f = "%s h"    if ( $a->[1] eq "SunRa" );
-
-      #-- add text if desired
-      if ( $h && ref($h) && $h->{long} ) {
-        $f = $tt->{"twilightastro"} . " " . $f
-          if ( $a->[1] eq "AstroTwilightEvening" );
-        $f = $tt->{"twilightastro"} . " " . $f
-          if ( $a->[1] eq "AstroTwilightMorning" );
-        $f = $tt->{"twilightcivil"} . " " . $f
-          if ( $a->[1] eq "CivilTwilightEvening" );
-        $f = $tt->{"twilightcivil"} . " " . $f
-          if ( $a->[1] eq "CivilTwilightMorning" );
-        $f = $tt->{"twilightcustom"} . " " . $f
-          if ( $a->[1] eq "CustomTwilightEvening" );
-        $f = $tt->{"twilightcustom"} . " " . $f
-          if ( $a->[1] eq "CustomTwilightMorning" );
-        $f = $tt->{"age"} . " " . $f      if ( $a->[1] eq "MoonAge" );
-        $f = $tt->{"alt"} . " " . $f      if ( $a->[1] eq "MoonAlt" );
-        $f = $tt->{"az"} . " " . $f       if ( $a->[1] eq "MoonAz" );
-        $f = $tt->{"dec"} . " " . $f      if ( $a->[1] eq "MoonDec" );
-        $f = $tt->{"diameter"} . " " . $f if ( $a->[1] eq "MoonDiameter" );
-        $f = $tt->{"distance"} . " " . $f . " " . $tt->{"toce"}
-          if ( $a->[1] eq "MoonDistance" );
-        $f = $tt->{"distance"} . " " . $f . " " . $tt->{"toobs"}
-          if ( $a->[1] eq "MoonDistanceObserver" );
-        $f = $tt->{"hoursofvisibility"} . " " . $f
-          if ( $a->[1] eq "MoonHrsVisible" );
-        $f = $tt->{"latecl"} . " " . $f  if ( $a->[1] eq "MoonLat" );
-        $f = $tt->{"lonecl"} . " " . $f  if ( $a->[1] eq "MoonLon" );
-        $f = $tt->{"phase"} . " " . $f   if ( $a->[1] eq "MoonPhaseN" );
-        $f = $tt->{"phase"} . " " . $f   if ( $a->[1] eq "MoonPhaseS" );
-        $f = $tt->{"ra"} . " " . $f      if ( $a->[1] eq "MoonRa" );
-        $f = $tt->{"rise"} . " " . $f    if ( $a->[1] eq "MoonRise" );
-        $f = $tt->{"set"} . " " . $f     if ( $a->[1] eq "MoonSet" );
-        $f = $tt->{"sign"} . " " . $f    if ( $a->[1] eq "MoonSign" );
-        $f = $tt->{"transit"} . " " . $f if ( $a->[1] eq "MoonTransit" );
-        $f = $tt->{"twilightnautic"} . " " . $f
-          if ( $a->[1] eq "NauticTwilightEvening" );
-        $f = $tt->{"twilightnautic"} . " " . $f
-          if ( $a->[1] eq "NauticTwilightMorning" );
-        $f = $f . " " . $tt->{"altitude"}  if ( $a->[1] eq "ObsAlt" );
-        $f = $tt->{"date"} . " " . $f      if ( $a->[1] eq "ObsDate" );
-        $f = $f . " " . $tt->{"dayofyear"} if ( $a->[1] eq "ObsDayofyear" );
-        $f = $tt->{"alt"} . " " . $f       if ( $a->[1] eq "ObsHorEvening" );
-        $f = $tt->{"alt"} . " " . $f       if ( $a->[1] eq "ObsHorMorning" );
-        $f = ( $Astro{ $a->[1] } == 1 ? $tt->{"dst"} : "" )
-          if ( $a->[1] eq "ObsIsDST" );
-        $f = $tt->{"jdate"} . " " . $f     if ( $a->[1] eq "ObsJD" );
-        $f = $tt->{"lmst"} . " " . $f      if ( $a->[1] eq "ObsLMST" );
-        $f = $tt->{"latitude"} . " " . $f  if ( $a->[1] eq "ObsLat" );
-        $f = $tt->{"longitude"} . " " . $f if ( $a->[1] eq "ObsLon" );
-        $f = $tt->{"season"} . " " . $f    if ( $a->[1] eq "ObsSeason" );
-        $f = $tt->{"time"} . " " . $f      if ( $a->[1] eq "ObsTime" );
-        $f = $tt->{"timezone"} . " " . $f  if ( $a->[1] eq "ObsTimezone" );
-        $f = $tt->{"alt"} . " " . $f       if ( $a->[1] eq "SunAlt" );
-        $f = $tt->{"az"} . " " . $f        if ( $a->[1] eq "SunAz" );
-        $f = $tt->{"dec"} . " " . $f       if ( $a->[1] eq "SunDec" );
-        $f = $tt->{"diameter"} . " " . $f  if ( $a->[1] eq "SunDiameter" );
-        $f = $tt->{"distance"} . " " . $f . " " . $tt->{"toce"}
-          if ( $a->[1] eq "SunDistance" );
-        $f = $tt->{"distance"} . " " . $f . " " . $tt->{"toobs"}
-          if ( $a->[1] eq "SunDistanceObserver" );
-        $f = $tt->{"hoursofnight"} . " " . $f
-          if ( $a->[1] eq "SunHrsInvisible" );
-        $f = $tt->{"hoursofsunlight"} . " " . $f
-          if ( $a->[1] eq "SunHrsVisible" );
-        $f = $tt->{"lonecl"} . " " . $f  if ( $a->[1] eq "SunLon" );
-        $f = $tt->{"ra"} . " " . $f      if ( $a->[1] eq "SunRa" );
-        $f = $tt->{"rise"} . " " . $f    if ( $a->[1] eq "SunRise" );
-        $f = $tt->{"set"} . " " . $f     if ( $a->[1] eq "SunSet" );
-        $f = $tt->{"sign"} . " " . $f    if ( $a->[1] eq "SunSign" );
-        $f = $tt->{"transit"} . " " . $f if ( $a->[1] eq "SunTransit" );
-
-        #-- add prefix for Sun/Moon if desired
-        if ($a->[1] =~/^Sun|Moon/) {
-          $f = " ". $f;
-
-          #-- add a separator after prefix if desired
-          $f = ":". $f if ($h->{long}>2.);
-
-          $f = $tt->{"sun"}. $f if ($h->{long}>1. && $a->[1] =~/^Sun/);
-          $f = $tt->{"moon"}. $f if ($h->{long}>1. && $a->[1] =~/^Moon/);
-        }
-      }
-
-      $ret = sprintf($f, $Astro{$a->[1]});
+    if ( $wantsreading==1 && $h && ref($h) && scalar keys %{$h} > 0 ) {
+      $ret = FormatReading( $a->[1], $h, $locale );
     }
-    elsif( $wantsreading==1 ) {
-      $ret = $Astro{$a->[1]};
+    elsif ( $wantsreading==1 ) {
+      $ret = $Astro{ $a->[1] };
     }
     else {
-      $ret=sprintf("%s %s %s",$tt->{"date"},$Astro{ObsDate},$Astro{ObsTime});
-      $ret .= (($Astro{ObsIsDST}==1) ? " (".$tt->{"dst"}.")\n" : "\n" );
-      $ret .= sprintf("%s %.2f %s, %d. %s\n",$tt->{"jdate"},$Astro{ObsJD},$tt->{"days"},$Astro{ObsDayofyear},$tt->{"dayofyear"});
-      $ret .= sprintf("%s %s, %s %2d\n",$tt->{"season"},$Astro{ObsSeason},$tt->{"timezone"},$Astro{ObsTimezone});
-      $ret .= sprintf("%s %.5f° %s, %.5f° %s, %.0f m %s\n",$tt->{"coord"},$Astro{ObsLon},$tt->{"longitude"},
-        $Astro{ObsLat},$tt->{"latitude"},$Astro{ObsAlt},$tt->{"altitude"});
-      $ret .= sprintf("%s %s \n\n",$tt->{"lmst"},$Astro{ObsLMST});
-      $ret .= "\n".$tt->{"sun"}."\n";
-      $ret .= sprintf("%s %s   %s %s   %s %s\n",$tt->{"rise"},$Astro{SunRise},$tt->{"set"},$Astro{SunSet},$tt->{"transit"},$Astro{SunTransit});
-      $ret .= sprintf("%s %s h   %s %s h\n",$tt->{"hoursofsunlight"},$Astro{SunHrsVisible},$tt->{"hoursofnight"},$Astro{SunHrsInvisible});
-      $ret .= sprintf("%s %s  -  %s\n",$tt->{"twilightcivil"},$Astro{CivilTwilightMorning},$Astro{CivilTwilightEvening});
-      $ret .= sprintf("%s %s  -  %s\n",$tt->{"twilightnautic"},$Astro{NauticTwilightMorning},$Astro{NauticTwilightEvening});
-      $ret .= sprintf("%s %s  -  %s\n",$tt->{"twilightastro"},$Astro{AstroTwilightMorning},$Astro{AstroTwilightEvening});
-      $ret .= sprintf("%s: %.0f km %s (%.0f km %s)\n",$tt->{"distance"},$Astro{SunDistance},$tt->{"toce"},$Astro{SunDistanceObserver},$tt->{"toobs"});
-      $ret .= sprintf("%s:  %s %2.1f°, %s %s h, %s %2.1f°; %s %2.1f°, %s %2.1f°\n",
-        $tt->{"position"},$tt->{"lonecl"},$Astro{SunLon},$tt->{"ra"},
-        $Astro{SunRa},$tt->{"dec"},$Astro{SunDec},$tt->{"az"},$Astro{SunAz},$tt->{"alt"},$Astro{SunAlt});
-      $ret .= sprintf("%s %2.1f', %s %s\n\n",$tt->{"diameter"},$Astro{SunDiameter},$tt->{"sign"},$Astro{SunSign});
-      $ret .= "\n".$tt->{"moon"}."\n";
-      $ret .= sprintf("%s %s   %s %s   %s %s\n",$tt->{"rise"},$Astro{MoonRise},$tt->{"set"},$Astro{MoonSet},$tt->{"transit"},$Astro{MoonTransit});
-      $ret .= sprintf("%s %s\n",$tt->{"hoursofvisibility"},$Astro{MoonHrsVisible});
-      $ret .= sprintf("%s: %.0f km %s (%.0f km %s)\n",$tt->{"distance"},$Astro{MoonDistance},$tt->{"toce"},$Astro{MoonDistanceObserver},$tt->{"toobs"});
-      $ret .= sprintf("%s:  %s %2.1f°, %s %2.1f°; %s %s h, %s %2.1f°; %s %2.1f°, %s %2.1f°\n",
-        $tt->{"position"},$tt->{"lonecl"},$Astro{MoonLon},$tt->{"latecl"},$Astro{MoonLat},$tt->{"ra"},
-        $Astro{MoonRa},$tt->{"dec"},$Astro{MoonDec},$tt->{"az"},$Astro{MoonAz},$tt->{"alt"},$Astro{MoonAlt});
-      $ret .= sprintf("%s %2.1f',  %s %2.1f°, %s %1.2f = %s, %s %s\n",$tt->{"diameter"},
-        $Astro{MoonDiameter},$tt->{"age"},$Astro{MoonAge},$tt->{"phase"},$Astro{MoonPhaseN},$Astro{MoonPhaseS},$tt->{"sign"},$Astro{MoonSign});
+      $h->{long} = 1;
+
+      $ret = FormatReading( "ObsDate", $h, $locale ) . " " . $Astro{ObsTime};
+      $ret .= (
+        ( $Astro{ObsIsDST} == 1 )
+        ? " (" . FormatReading( "ObsIsDST", $h ) . ")\n"
+        : "\n"
+      );
+      $ret .= FormatReading( "ObsJD", $h, $locale ) . ", "
+        . FormatReading( "ObsDayofyear", $h, $locale ) . "\n";
+      $ret .= FormatReading( "ObsSeason", $h ) . ", "
+        . FormatReading( "ObsTimezone", $h ) . "\n";
+      $ret .=
+          $tt->{"coord"} . " "
+        . FormatReading( "ObsLon", $h, $locale ) . ", "
+        . FormatReading( "ObsLat", $h, $locale ) . ", "
+        . FormatReading( "ObsAlt", $h, $locale ) . "\n";
+      $ret .= FormatReading( "ObsLMST", $h ) . "\n\n";
+
+      $ret .= "\n" . $tt->{"sun"} . "\n";
+      $ret .=
+          FormatReading( "SunRise", $h ) . "   "
+        . FormatReading( "SunSet",     $h ) . "   "
+        . FormatReading( "SunTransit", $h ) . "\n";
+      $ret .= FormatReading( "SunHrsVisible", $h ) . "   "
+        . FormatReading( "SunHrsInvisible", $h ) . "\n";
+      $ret .= FormatReading( "CivilTwilightMorning", $h ) . "  -  "
+        . $Astro{CivilTwilightEvening} . "\n";
+      $ret .= FormatReading( "NauticTwilightMorning", $h ) . "  -  "
+        . $Astro{NauticTwilightEvening} . "\n";
+      $ret .= FormatReading( "AstroTwilightMorning", $h ) . "  -  "
+        . $Astro{AstroTwilightEvening} . "\n";
+      $ret .=
+          $tt->{"distance"} . ":  "
+        . FormatReading( "SunDistance",         $h, $locale ) . " ("
+        . FormatReading( "SunDistanceObserver", $h, $locale ) . ")\n";
+      $ret .=
+          $tt->{"position"} . ":  "
+        . FormatReading( "SunLon", $h, $locale ) . ", "
+        . FormatReading( "SunRa",  $h, $locale ) . ", "
+        . FormatReading( "SunDec", $h, $locale ) . "; "
+        . FormatReading( "SunAz",  $h, $locale ) . ", "
+        . FormatReading( "SunAlt", $h, $locale ) . "\n";
+      $ret .= FormatReading( "SunDiameter", $h, $locale ) . ", "
+        . FormatReading( "SunSign", $h ) . "\n\n";
+
+      $ret .= "\n" . $tt->{"moon"} . "\n";
+      $ret .=
+          FormatReading( "MoonRise", $h ) . "   "
+        . FormatReading( "MoonSet",     $h ) . "   "
+        . FormatReading( "MoonTransit", $h ) . "\n";
+      $ret .= FormatReading( "MoonHrsVisible", $h ) . "\n";
+      $ret .=
+          $tt->{"distance"} . ":  "
+        . FormatReading( "MoonDistance",         $h, $locale ) . " ("
+        . FormatReading( "MoonDistanceObserver", $h, $locale ) . ")\n";
+      $ret .=
+          $tt->{"position"} . ":  "
+        . FormatReading( "MoonLon", $h, $locale ) . ", "
+        . FormatReading( "MoonLat", $h, $locale ) . "; "
+        . FormatReading( "MoonRa",  $h, $locale ) . ", "
+        . FormatReading( "MoonDec", $h, $locale ) . ", "
+        . FormatReading( "MoonAz",  $h, $locale ) . ", "
+        . FormatReading( "MoonAlt", $h, $locale ) . "\n";
+      $ret .=
+          FormatReading( "MoonDiameter", $h, $locale ) . ",  "
+        . FormatReading( "MoonAge",    $h, $locale ) . ", "
+        . FormatReading( "MoonPhaseN", $h, $locale ) . " = "
+        . $Astro{MoonPhaseS} . ", "
+        . FormatReading( "MoonSign", $h );
     }
 
-    setlocale(LC_NUMERIC, "");
-    setlocale(LC_NUMERIC, $old_locale);
-    no locale;
     return $ret;
   }else {
     return "[FHEM::Astro::Get] $name with unknown argument $a->[0], choose one of ". 
     join(" ", map { defined($gets{$_})?"$_:$gets{$_}":$_ } sort keys %gets);
   }
+}
+
+########################################################################################################
+#
+# FormatReading - Convert a reading into text format
+#
+#  Parameter r = reading name, h = parameter hash, locale = locale string
+#
+########################################################################################################
+
+sub FormatReading($$;$) {
+  my ( $r, $h, $locale ) = @_;
+  my $f = "%s";
+
+  my $ret;
+  my $old_locale = setlocale(LC_NUMERIC);
+  setlocale(LC_NUMERIC, $locale) if ($locale);
+
+  use locale ':not_characters';
+
+  #-- number formatting
+  $f = "%2.1f" if ( $r eq "MoonAge" );
+  $f = "%2.1f" if ( $r eq "MoonAlt" );
+  $f = "%2.1f" if ( $r eq "MoonAz" );
+  $f = "%2.1f" if ( $r eq "MoonDec" );
+  $f = "%2.1f" if ( $r eq "MoonDiameter" );
+  $f = "%.0f"  if ( $r eq "MoonDistance" );
+  $f = "%.0f"  if ( $r eq "MoonDistanceObserver" );
+  $f = "%2.1f" if ( $r eq "MoonLat" );
+  $f = "%2.1f" if ( $r eq "MoonLon" );
+  $f = "%1.2f" if ( $r eq "MoonPhaseN" );
+  $f = "%.0f"  if ( $r eq "ObsAlt" );
+  $f = "%d"    if ( $r eq "ObsDayofyear" );
+  $f = "%2.1f" if ( $r eq "ObsHorEvening" );
+  $f = "%2.1f" if ( $r eq "ObsHorMorning" );
+  $f = "%.2f"  if ( $r eq "ObsJD" );
+  $f = "%.5f"  if ( $r eq "ObsLat" );
+  $f = "%.5f"  if ( $r eq "ObsLon" );
+  $f = "%2d"   if ( $r eq "ObsTimezone" );  
+  $f = "%2.1f" if ( $r eq "SunAlt" );
+  $f = "%2.1f" if ( $r eq "SunAz" );
+  $f = "%2.1f" if ( $r eq "SunDec" );
+  $f = "%2.1f" if ( $r eq "SunDiameter" );
+  $f = "%.0f"  if ( $r eq "SunDistance" );
+  $f = "%.0f"  if ( $r eq "SunDistanceObserver" );
+  $f = "%2.1f" if ( $r eq "SunLon" );
+
+  if ( $h && ref($h) ) {
+
+    #-- add unit if desired
+    if ( $h->{unit}
+        || ( $h->{long} && ( !defined( $h->{unit} ) || $h->{unit} ne "0" ) ) )
+    {
+      $f .= "°" if ( $r eq "MoonAge" );
+      $f .= "°" if ( $r eq "MoonAlt" );
+      $f .= "°" if ( $r eq "MoonAz" );
+      $f .= "°" if ( $r eq "MoonDec" );
+      $f .= "'"  if ( $r eq "MoonDiameter" );
+      $f .= " km" if ( $r eq "MoonDistance" );
+      $f .= " km" if ( $r eq "MoonDistanceObserver" );
+      $f .= " h" if ( $r eq "MoonHrsInvisible" );
+      $f .= " h" if ( $r eq "MoonHrsVisible" );
+      $f .= "°" if ( $r eq "MoonLat" );
+      $f .= "°" if ( $r eq "MoonLon" );
+      $f .= " h" if ( $r eq "MoonRa" );
+      $f .= " m" if ( $r eq "ObsAlt" );
+      $f .= "."  if ( $r eq "ObsDayofyear" );
+      $f .= "°" if ( $r eq "ObsHorEvening" );
+      $f .= "°" if ( $r eq "ObsHorMorning" );
+      $f .= "°" if ( $r eq "ObsLat" );
+      $f .= "°" if ( $r eq "ObsLon" );
+      $f .= "°" if ( $r eq "SunAlt" );
+      $f .= "°" if ( $r eq "SunAz" );
+      $f .= "°" if ( $r eq "SunDec" );
+      $f .= "'"  if ( $r eq "SunDiameter" );
+      $f .= " km" if ( $r eq "SunDistance" );
+      $f .= " km" if ( $r eq "SunDistanceObserver" );
+      $f .= " h" if ( $r eq "SunHrsInvisible" );
+      $f .= " h" if ( $r eq "SunHrsVisible" );
+      $f .= "°" if ( $r eq "SunLon" );
+      $f .= " h" if ( $r eq "SunRa" );
+    }
+
+    #-- add text if desired
+    if ( $h->{long} ) {
+      $f = $tt->{"twilightastro"} . " " . $f
+        if ( $r eq "AstroTwilightEvening" );
+      $f = $tt->{"twilightastro"} . " " . $f
+        if ( $r eq "AstroTwilightMorning" );
+      $f = $tt->{"twilightcivil"} . " " . $f
+        if ( $r eq "CivilTwilightEvening" );
+      $f = $tt->{"twilightcivil"} . " " . $f
+        if ( $r eq "CivilTwilightMorning" );
+      $f = $tt->{"twilightcustom"} . " " . $f
+        if ( $r eq "CustomTwilightEvening" );
+      $f = $tt->{"twilightcustom"} . " " . $f
+        if ( $r eq "CustomTwilightMorning" );
+      $f = $tt->{"age"} . " " . $f      if ( $r eq "MoonAge" );
+      $f = $tt->{"alt"} . " " . $f      if ( $r eq "MoonAlt" );
+      $f = $tt->{"az"} . " " . $f       if ( $r eq "MoonAz" );
+      $f = $tt->{"dec"} . " " . $f      if ( $r eq "MoonDec" );
+      $f = $tt->{"diameter"} . " " . $f if ( $r eq "MoonDiameter" );
+      $f = $f . " " . $tt->{"toce"}
+        if ( $r eq "MoonDistance" );
+      $f = $f . " " . $tt->{"toobs"}
+        if ( $r eq "MoonDistanceObserver" );
+      $f = $tt->{"hoursofvisibility"} . " " . $f
+        if ( $r eq "MoonHrsVisible" );
+      $f = $tt->{"latecl"} . " " . $f  if ( $r eq "MoonLat" );
+      $f = $tt->{"lonecl"} . " " . $f  if ( $r eq "MoonLon" );
+      $f = $tt->{"phase"} . " " . $f   if ( $r eq "MoonPhaseN" );
+      $f = $tt->{"phase"} . " " . $f   if ( $r eq "MoonPhaseS" );
+      $f = $tt->{"ra"} . " " . $f      if ( $r eq "MoonRa" );
+      $f = $tt->{"rise"} . " " . $f    if ( $r eq "MoonRise" );
+      $f = $tt->{"set"} . " " . $f     if ( $r eq "MoonSet" );
+      $f = $tt->{"sign"} . " " . $f    if ( $r eq "MoonSign" );
+      $f = $tt->{"transit"} . " " . $f if ( $r eq "MoonTransit" );
+      $f = $tt->{"twilightnautic"} . " " . $f
+        if ( $r eq "NauticTwilightEvening" );
+      $f = $tt->{"twilightnautic"} . " " . $f
+        if ( $r eq "NauticTwilightMorning" );
+      $f = $f . " " . $tt->{"altitude"}  if ( $r eq "ObsAlt" );
+      $f = $tt->{"date"} . " " . $f      if ( $r eq "ObsDate" );
+      $f = $f . " " . $tt->{"dayofyear"} if ( $r eq "ObsDayofyear" );
+      $f = $tt->{"alt"} . " " . $f if ( $r eq "ObsHorEvening" );
+      $f = $tt->{"alt"} . " " . $f if ( $r eq "ObsHorMorning" );
+      $f = ( $Astro{$r} == 1. ? $tt->{"dst"} : $tt->{"nt"} )
+        if ( $r eq "ObsIsDST" );
+      $f = $tt->{"jdate"} . " " . $f." ". $tt->{"days"}     if ( $r eq "ObsJD" );
+      $f = $tt->{"lmst"} . " " . $f      if ( $r eq "ObsLMST" );
+      $f = $f ." ".$tt->{"latitude"}  if ( $r eq "ObsLat" );
+      $f = $f. " ".$tt->{"longitude"} if ( $r eq "ObsLon" );
+      $f = $tt->{"season"} . " " . $f    if ( $r eq "ObsSeason" );
+      $f = $tt->{"time"} . " " . $f      if ( $r eq "ObsTime" );
+      $f = $tt->{"timezone"} . " " . $f  if ( $r eq "ObsTimezone" );
+      $f = $tt->{"alt"} . " " . $f       if ( $r eq "SunAlt" );
+      $f = $tt->{"az"} . " " . $f        if ( $r eq "SunAz" );
+      $f = $tt->{"dec"} . " " . $f       if ( $r eq "SunDec" );
+      $f = $tt->{"diameter"} . " " . $f  if ( $r eq "SunDiameter" );
+      $f = $f . " " . $tt->{"toce"}
+        if ( $r eq "SunDistance" );
+      $f = $f . " " . $tt->{"toobs"}
+        if ( $r eq "SunDistanceObserver" );
+      $f = $tt->{"hoursofnight"} . " " . $f
+        if ( $r eq "SunHrsInvisible" );
+      $f = $tt->{"hoursofsunlight"} . " " . $f
+        if ( $r eq "SunHrsVisible" );
+      $f = $tt->{"lonecl"} . " " . $f  if ( $r eq "SunLon" );
+      $f = $tt->{"ra"} . " " . $f      if ( $r eq "SunRa" );
+      $f = $tt->{"rise"} . " " . $f    if ( $r eq "SunRise" );
+      $f = $tt->{"set"} . " " . $f     if ( $r eq "SunSet" );
+      $f = $tt->{"sign"} . " " . $f    if ( $r eq "SunSign" );
+      $f = $tt->{"transit"} . " " . $f if ( $r eq "SunTransit" );
+
+      #-- add prefix for Sun/Moon if desired
+      if ( $h->{long} > 1. && $r =~ /^Sun|Moon/ ) {
+          $f = " " . $f;
+
+          #-- add a separator after prefix if desired
+          $f = ":" . $f if ( $h->{long} > 2. );
+
+          $f = $tt->{"sun"} . $f
+            if ( $r =~ /^Sun/ );
+          $f = $tt->{"moon"} . $f
+            if ( $r =~ /^Moon/ );
+      }
+    }
+  }
+
+  $ret = ($f =~ m/%/ ? sprintf($f, $Astro{$r}) : $f);
+
+  setlocale(LC_NUMERIC, "");
+  setlocale(LC_NUMERIC, $old_locale);
+  no locale;
+  return $ret;
 }
 
 1;
