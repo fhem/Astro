@@ -2343,24 +2343,24 @@ sub Update($@) {
   foreach my $comp (
       defined( $hash->{RECOMPUTEAT} ) ? split( ',', $hash->{RECOMPUTEAT} ) : () )
   {
-      if ( $comp eq 'NewDay' ) {
-          push @next,
-            timelocal( 0, 0, 0, ( localtime( $now + 86400. ) )[ 3, 4, 5 ] );
-          next;
-      }
-      my $k = ".$comp";
-      next unless ( defined( $Astro{$k} ) && $Astro{$k} =~ /^\d+(?:\.\d+)?$/ );
-      my $t =
-        timelocal( 0, 0, 0, ( localtime($now) )[ 3, 4, 5 ] ) + $Astro{$k} * 3600.;
-      $t += 86400. if ( $t < $now );    # that is for tomorrow
-      push @next, $t;
+    if ( $comp eq 'NewDay' ) {
+        push @next,
+          timelocal( 0, 0, 0, ( localtime( $now + 86400. ) )[ 3, 4, 5 ] );
+        next;
+    }
+    my $k = ".$comp";
+    next unless ( defined( $Astro{$k} ) && $Astro{$k} =~ /^\d+(?:\.\d+)?$/ );
+    my $t =
+      timelocal( 0, 0, 0, ( localtime($now) )[ 3, 4, 5 ] ) + $Astro{$k} * 3600.;
+    $t += 86400. if ( $t < $now );    # that is for tomorrow
+    push @next, $t;
   }
 
   #-- set timer for next update
   if (@next) {
-      my $n = minNum( $next[0], @next );
-      $hash->{NEXTUPDATE} = FmtDateTime($n);
-      InternalTimer( $n, "FHEM::Astro::Update", $hash, 1 );
+    my $n = minNum( $next[0], @next );
+    $hash->{NEXTUPDATE} = FmtDateTime($n);
+    InternalTimer( $n, "FHEM::Astro::Update", $hash, 1 );
   }
 
   readingsBeginUpdate($hash);
@@ -2551,24 +2551,24 @@ sub FormatReading($$;$) {
 ########################################################################################################
 
 sub Set($@) {
-    my ($hash,$a,$h) = @_;
+  my ($hash,$a,$h) = @_;
 
-    my $name = shift @$a;
+  my $name = shift @$a;
 
-    if ( $a->[0] eq "update" ) {
-        return "[FHEM::Astro::Set] $name is disabled" if ( IsDisabled($name) );
-        RemoveInternalTimer($hash);
-        InternalTimer( gettimeofday() + 1, "FHEM::Astro::Update", $hash, 1 );
-    }
-    else {
-        return
-          "[FHEM::Astro::Set] $name with unknown argument $a->[0], choose one of "
-          . join( " ",
-            map { defined( $sets{$_} ) ? "$_:$sets{$_}" : $_ }
-            sort keys %sets );
-    }
+  if ( $a->[0] eq "update" ) {
+    return "[FHEM::Astro::Set] $name is disabled" if ( IsDisabled($name) );
+    RemoveInternalTimer($hash);
+    InternalTimer( gettimeofday() + 1, "FHEM::Astro::Update", $hash, 1 );
+  }
+  else {
+    return
+      "[FHEM::Astro::Set] $name with unknown argument $a->[0], choose one of "
+      . join( " ",
+        map { defined( $sets{$_} ) ? "$_:$sets{$_}" : $_ }
+        sort keys %sets );
+  }
 
-    return "";
+  return "";
 }
 
 ########################################################################################################
@@ -2660,9 +2660,19 @@ sub Get($@) {
       $json->pretty;
     }
     if( $wantsreading==1 ){
+      if ($h && ref($h) && $h->{text}) {
+        return $json->encode(FormatReading($Astro{$a->[1]}, $h, $locale)) if (ref($json));
+        return toJSON(FormatReading($Astro{$a->[1]}, $h, $locale));
+      }
       return $json->encode($Astro{$a->[1]}) if (ref($json));
       return toJSON($Astro{$a->[1]});
     }else{
+      if ($h && ref($h) && $h->{text}) {
+        foreach (keys %Astro) {
+          next if (ref($Astro{$_}) || $_ =~ /^\./);
+          $Astro{text}{$_} = FormatReading($_, $h, $locale);
+        }
+      }
       return $json->encode(\%Astro) if (ref($json));
       return toJSON(\%Astro);
     }
@@ -2848,7 +2858,8 @@ sub Get($@) {
                 <code>get &lt;name&gt; json [&lt;reading&gt;] YYYY-MM-DD [-1|yesterday|+1|tomorrow]</code><br/>
                 <code>get &lt;name&gt; json [&lt;reading&gt;] HH:MM[:SS] [-1|yesterday|+1|tomorrow]</code><br/>
                 <code>get &lt;name&gt; json [&lt;reading&gt;] YYYY-MM-DD HH:MM[:SS] [-1|yesterday|+1|tomorrow]</code>
-                <br />returns the complete set of an individual reading of astronomical data either for the current time, or for a day and time given in the argument. <code>yesterday</code>, <code>tomorrow</code> or any other integer number may be given at the end to get data relative to the given day and time.</li>
+                <br />returns the complete set of an individual reading of astronomical data either for the current time, or for a day and time given in the argument. <code>yesterday</code>, <code>tomorrow</code> or any other integer number may be given at the end to get data relative to the given day and time.<br/>
+                Formatted values as described below may be generated in a sub-tree <code>text</code> by adding <code>text=1</code> to the request.</li>
             <li><a name="Astro_text"></a>
                 <code>get &lt;name&gt; text [&lt;reading&gt;] [-1|yesterday|+1|tomorrow]</code><br/>
                 <code>get &lt;name&gt; text [&lt;reading&gt;] YYYY-MM-DD [-1|yesterday|+1|tomorrow]</code><br/>
