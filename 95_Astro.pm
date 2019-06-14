@@ -2566,6 +2566,9 @@ sub Get($@) {
     SetTime(gettimeofday + ($dayOffset * 86400.), $tz, $lc_time);
   }
 
+  #-- disable automatic links to FHEM devices
+  delete $FW_webArgs{addLinks};
+
   if( $a->[0] eq "version") {
     return $VERSION;
     
