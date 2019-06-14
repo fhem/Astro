@@ -2615,7 +2615,7 @@ sub Get($@) {
       $ret .= FormatReading( "ObsSeason", $h ) . ", "
         . FormatReading( "ObsTimezone", $h ) . "\n";
       $ret .=
-          $tt->{"coord"} . " "
+          $tt->{"coord"} . ":  "
         . FormatReading( "ObsLon", $h, $lc_numeric ) . ", "
         . FormatReading( "ObsLat", $h, $lc_numeric ) . ", "
         . FormatReading( "ObsAlt", $h, $lc_numeric ) . "\n";
