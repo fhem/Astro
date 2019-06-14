@@ -2829,7 +2829,10 @@ sub Get($@) {
         <ul><code>Astro_Get( SOME_HASH_REFERENCE,"dummy","text", "SunRise","2019-12-24");</code></ul>
         to acquire the sunrise on Christmas Eve 2019. The hash reference may also be undefined or an existing device name of any type. Note that device attributes of the respective device will be respected as long as their name matches those mentioned for an Astro device.
         attribute=value pairs may be added in text format to enforce
-        settings like language that would otherwise be defined by a real device.</li>
+        settings like language that would otherwise be defined by a real device.<br/>
+        You may also add parameters to customize your request:
+        <code>Astro_Get( SOME_HASH_REFERENCE, ["dummy","text"], {html=>1} )</code><br/>
+        <code>Astro_Get( SOME_HASH_REFERENCE, ["dummy","text","SunRise,SunSet,SunAz,SunDistanceObserver"], {html=>1, long=>2} )</code></li>
         </ul>
         <a name="Astroset"></a>
         <h4>Set</h4>
