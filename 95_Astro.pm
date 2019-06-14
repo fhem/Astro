@@ -2101,14 +2101,21 @@ sub Compute($;$){
   $Astro{MoonHrsInvisible} = HHMM($mooninvisible);
   
   #-- fix date
-  $Astro{ObsDate}             = $Date{date};
-  $Astro{ObsTime}             = $Date{time};
-  $Astro{".timestamp"}        = $Date{timestamp};
-  $Astro{".timeday"}          = $Date{timeday};
-  $Astro{ObsTimezone}         = $Date{zonedelta};
-  $Astro{ObsTimezoneS}        = $Date{tz} if($Date{tz});
-  $Astro{ObsDayofyear}        = $Date{dayofyear};
-  $Astro{ObsIsDST}            = $Date{isdst};
+  $Astro{ObsDate}      = $Date{date};
+  $Astro{ObsTime}      = $Date{time};
+  $Astro{ObsTimezone}  = $Date{zonedelta};
+  $Astro{ObsTimezoneS} = $Date{tz} if ( $Date{tz} );
+  $Astro{ObsDayofyear} = $Date{dayofyear};
+  $Astro{ObsIsDST}     = $Date{isdst};
+  $Astro{".timestamp"} = $Date{timestamp};
+  $Astro{".timeday"}   = $Date{timeday};
+  $Astro{".wdayl"}     = $Date{wdayl};
+  $Astro{".wdays"}     = $Date{wdays};
+  $Astro{".monthl"}    = $Date{monthl};
+  $Astro{".months"}    = $Date{months};
+  $Astro{".datetime"}  = $Date{datetime};
+  $Astro{".week"}      = $Date{week};
+  $Astro{".wday"}      = $Date{wday};
 
   #-- check astro season
   my $doj = $Astro{ObsDayofyear};
