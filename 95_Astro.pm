@@ -815,6 +815,35 @@ sub Notify ($$) {
           InternalTimer(gettimeofday()+1,"FHEM::Astro::Update",$hash,0);
         }
       }
+
+      # only process attribute events
+      next
+        unless ( $event =~
+m/^((?:DELETE)?ATTR)\s+([A-Za-z\d._]+)\s+([A-Za-z\d_\.\-\/]+)(?:\s+(.*)\s*)?$/
+        );
+
+      my $cmd  = $1;
+      my $d    = $2;
+      my $attr = $3;
+      my $val  = $4;
+      my $type = GetType($d);
+
+      # filter attributes to be processed
+      next
+        unless ( $attr eq "altitude"
+          || $attr eq "language"
+          || $attr eq "latitude"
+          || $attr eq "lc_numeric"
+          || $attr eq "lc_time"
+          || $attr eq "longitude"
+          || $attr eq "timezone" );
+
+      # when global attributes were changed
+      if ( $d eq "global" ) {
+        RemoveInternalTimer($hash);
+        InternalTimer( gettimeofday() + 1,
+            "FHEM::Astro::Update", $hash, 0 );
+      }
     }
   }
 
@@ -2101,7 +2130,7 @@ sub Compute($;$){
   $Astro{".MoonHrsInvisible"} = $mooninvisible;
   $Astro{MoonHrsVisible}   = HHMM($moonvisible);
   $Astro{MoonHrsInvisible} = HHMM($mooninvisible);
-  
+
   #-- fix date
   $Astro{ObsDate}      = $Date{date};
   $Astro{ObsTime}      = $Date{time};
@@ -2111,6 +2140,12 @@ sub Compute($;$){
   $Astro{ObsIsDST}     = $Date{isdst};
   $Astro{".timestamp"} = $Date{timestamp};
   $Astro{".timeday"}   = $Date{timeday};
+  $Astro{".year"}      = $Date{year};
+  $Astro{".month"}     = $Date{month};
+  $Astro{".day"}       = $Date{day};
+  $Astro{".hour"}      = $Date{hour};
+  $Astro{".min"}       = $Date{min};
+  $Astro{".sec"}       = $Date{sec};
   $Astro{".wdayl"}     = $Date{wdayl};
   $Astro{".wdays"}     = $Date{wdays};
   $Astro{".monthl"}    = $Date{monthl};
@@ -2530,9 +2565,16 @@ sub Get($@) {
   #-- fill %Astro if it is still empty after restart to avoid warnings
   Compute($hash, $h) if (scalar keys %Astro == 0);
 
-  #-- second parameter may be a reading
-  if( (int(@$a)>1) && exists($Astro{$a->[1]})) {
-    $wantsreading = 1;
+  #-- second parameter may be one or many readings
+  my @readings;
+  if( (int(@$a)>1) ) {
+    @readings = split(',', $a->[1]);
+    foreach (@readings) {
+      if(exists($Astro{$_})) {
+        $wantsreading = 1;
+        last;
+      }
+    }
   }
 
   #-- last parameter may be indicating day offset
@@ -2580,15 +2622,21 @@ sub Get($@) {
       $json->canonical;
       $json->pretty;
     }
+
     if( $wantsreading==1 ){
-      if ($h && ref($h) && $h->{text}) {
-        return encode_utf8($json->encode(FormatReading($a->[1], $h, $lc_numeric))) if (ref($json));
-        return encode_utf8(toJSON(FormatReading($a->[1], $h, $lc_numeric)));
+      my %ret;
+      foreach (@readings) {
+        next unless(exists($Astro{$_}) && !ref($Astro{$_}));
+        if ($h && ref($h) && ($h->{text} || $h->{unit} || $h->{long})) {
+          $ret{text}{$_} = FormatReading($_, $h, $lc_numeric);
+        }
+        $ret{$_} = $Astro{$_};
       }
-      return encode_utf8($json->encode($Astro{$a->[1]})) if (ref($json));
-      return encode_utf8(toJSON($Astro{$a->[1]}));
+
+      return encode_utf8($json->encode(\%ret)) if (ref($json));
+      return encode_utf8(toJSON(\%ret));
     }else{
-      if ($h && ref($h) && $h->{text}) {
+      if ($h && ref($h) && ($h->{text} || $h->{unit} || $h->{long})) {
         foreach (keys %Astro) {
           next if (ref($Astro{$_}) || $_ =~ /^\./);
           $Astro{text}{$_} = FormatReading($_, $h, $lc_numeric);
@@ -2600,14 +2648,22 @@ sub Get($@) {
 
   }elsif( $a->[0] eq "text") {
     Compute($hash, $h);
-    my $ret;
+    my $ret = "";
 
     if ( $wantsreading==1 && $h && ref($h) && scalar keys %{$h} > 0 ) {
-      $ret = encode_utf8(FormatReading( $a->[1], $h, $lc_numeric ));
+      foreach (@readings) {
+        next if (ref($Astro{$_}) || $_ =~ /^\./);
+        $ret .= "\n" if ($ret ne "");
+        $ret .= encode_utf8(FormatReading( $_, $h, $lc_numeric ));
+      }
       $ret = "<html>" . $ret . "</html>" if (defined($html) && $html ne "0");
     }
     elsif ( $wantsreading==1 ) {
-      $ret = encode_utf8($Astro{ $a->[1] });
+      foreach (@readings) {
+        next if (ref($Astro{$_}) || $_ =~ /^\./);
+        $ret .= "\n" if ($ret ne "");
+        $ret .= encode_utf8($Astro{$_});
+      }
       $ret = "<html>" . $ret . "</html>" if (defined($html) && $html ne "0");
     }
     else {
@@ -2682,12 +2738,14 @@ sub Get($@) {
         . $Astro{MoonPhaseS} . ", "
         . FormatReading( "MoonSign", $h );
 
-      if ($html && $html eq "1") {
-        $ret =~ s/   /&nbsp;&nbsp;&nbsp;/g;
-        $ret =~ s/  /&nbsp;&nbsp;/g;
-        $ret =~ s/\n/<br\/>/g;
-        $ret = "<html>" . $ret . "</html>";        
-      }
+      $ret = "<html>" . $ret . "</html>"
+        if ($html && $html eq "1");
+    }
+
+    if ($html && $html eq "1") {
+      $ret =~ s/   /&nbsp;&nbsp;&nbsp;/g;
+      $ret =~ s/  /&nbsp;&nbsp;/g;
+      $ret =~ s/\n/<br\/>/g;
     }
 
     return $ret;
@@ -2736,7 +2794,7 @@ sub Get($@) {
         <ul>
         <li><i>Date,Dayofyear</i> = date</li>
         <li><i>JD</i> = Julian date</li>
-        <li><i>Time,Timezone,TimezoneS</i> obvious meaning</li>
+        <li><i>Time,Timezone,TimezoneS</i> = obvious meaning</li>
         <li><i>IsDST</i> = 1 if running on daylight savings time, 0 otherwise</li>
         <li><i>GMST,LMST</i> = Greenwich and Local Mean Sidereal Time (in HH:MM)</li>
 	    </ul>
@@ -2784,23 +2842,23 @@ sub Get($@) {
         Attention: Get-calls are NOT written into the readings of the device. Readings change only through periodic updates.<br/>
         <ul>
             <li><a name="Astro_json"></a>
-                <code>get &lt;name&gt; json [&lt;reading&gt;] [-1|yesterday|+1|tomorrow]</code><br/>
-                <code>get &lt;name&gt; json [&lt;reading&gt;] YYYY-MM-DD [-1|yesterday|+1|tomorrow]</code><br/>
-                <code>get &lt;name&gt; json [&lt;reading&gt;] HH:MM[:SS] [-1|yesterday|+1|tomorrow]</code><br/>
-                <code>get &lt;name&gt; json [&lt;reading&gt;] YYYY-MM-DD HH:MM[:SS] [-1|yesterday|+1|tomorrow]</code>
+                <code>get &lt;name&gt; json [&lt;reading&gt;,[&lt;reading&gt;]] [-1|yesterday|+1|tomorrow]</code><br/>
+                <code>get &lt;name&gt; json [&lt;reading&gt;,[&lt;reading&gt;]] YYYY-MM-DD [-1|yesterday|+1|tomorrow]</code><br/>
+                <code>get &lt;name&gt; json [&lt;reading&gt;,[&lt;reading&gt;]] HH:MM[:SS] [-1|yesterday|+1|tomorrow]</code><br/>
+                <code>get &lt;name&gt; json [&lt;reading&gt;,[&lt;reading&gt;]] YYYY-MM-DD HH:MM[:SS] [-1|yesterday|+1|tomorrow]</code>
                 <br />returns the complete set of an individual reading of astronomical data either for the current time, or for a day and time given in the argument. <code>yesterday</code>, <code>tomorrow</code> or any other integer number may be given at the end to get data relative to the given day and time.<br/>
                 Formatted values as described below may be generated in a subtree <code>text</code> by adding <code>text=1</code> to the request.</li>
             <li><a name="Astro_text"></a>
-                <code>get &lt;name&gt; text [&lt;reading&gt;] [-1|yesterday|+1|tomorrow]</code><br/>
-                <code>get &lt;name&gt; text [&lt;reading&gt;] YYYY-MM-DD [-1|yesterday|+1|tomorrow]</code><br/>
-                <code>get &lt;name&gt; text [&lt;reading&gt;] HH:MM[:SS] [-1|yesterday|+1|tomorrow]</code><br/>
-                <code>get &lt;name&gt; text [&lt;reading&gt;] YYYY-MM-DD HH:MM[:SS] [-1|yesterday|+1|tomorrow]</code>
+                <code>get &lt;name&gt; text [&lt;reading&gt;,[&lt;reading&gt;]] [-1|yesterday|+1|tomorrow]</code><br/>
+                <code>get &lt;name&gt; text [&lt;reading&gt;,[&lt;reading&gt;]] YYYY-MM-DD [-1|yesterday|+1|tomorrow]</code><br/>
+                <code>get &lt;name&gt; text [&lt;reading&gt;,[&lt;reading&gt;]] HH:MM[:SS] [-1|yesterday|+1|tomorrow]</code><br/>
+                <code>get &lt;name&gt; text [&lt;reading&gt;,[&lt;reading&gt;]] YYYY-MM-DD HH:MM[:SS] [-1|yesterday|+1|tomorrow]</code>
                 <br />returns the complete set of an individual reading of astronomical data either for the current time, or for a day and time given in the argument. <code>yesterday</code>, <code>tomorrow</code> or any other integer number may be given at the end to get data relative to the given day and time.<br/>
                 The return value may be formatted and/or labeled by adding one or more of the following key=value pairs to the request:
                       <ul>
                       <li><i>unit=1</i> = Will add a unit to numerical values. Depending on attribute lc_numeric, the decimal separator will be in regional format as well.</li>
                       <li><i>long=1</i> = A describtive label will be added to the value.</li>
-                      <li><i>long=2</i> = Same as long=1 but a prefix for Sun or Moon will be added as a prefix.</li>
+                      <li><i>long=2</i> = Same as long=1 but Sun or Moon will be added as a prefix.</li>
                       <li><i>long=3</i> = Same as long=2 but <code>&lt;: &gt;</code> will be used as an additional separator.</li>
                       </ul></li>
             <li><a name="Astro_version"></a>
