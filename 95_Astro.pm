@@ -2512,22 +2512,24 @@ sub Set($@) {
 sub Get($@) {
   my ($hash,$a,$h,@a) = @_;
   my $name = "#APIcall";
+  my $type = "dummy";
 
   #-- backwards compatibility for non-parseParams requests
   if (!ref($a)) {
     $hash = exists($defs{$hash}) ? $defs{$hash} : ()
       if ($hash && !ref($hash));
-    if (defined($hash->{NAME})) {
-      $name = $hash->{NAME};
-    } else {
-      $hash->{NAME} = $name;
-    }
     unshift @a, $h;
     $h = undef;
+    $type = $a;
     $a = \@a;
   }
   else {
-    $name = shift @$a;
+    $type = shift @$a;
+  }
+  if (defined($hash->{NAME})) {
+    $name = $hash->{NAME};
+  } else {
+    $hash->{NAME} = $name;
   }
 
   my $wantsreading = 0;
@@ -2830,9 +2832,10 @@ sub Get($@) {
         to acquire the sunrise on Christmas Eve 2019. The hash reference may also be undefined or an existing device name of any type. Note that device attributes of the respective device will be respected as long as their name matches those mentioned for an Astro device.
         attribute=value pairs may be added in text format to enforce
         settings like language that would otherwise be defined by a real device.<br/>
-        You may also add parameters to customize your request:
-        <code>Astro_Get( SOME_HASH_REFERENCE, ["dummy","text"], {html=>1} )</code><br/>
-        <code>Astro_Get( SOME_HASH_REFERENCE, ["dummy","text","SunRise,SunSet,SunAz,SunDistanceObserver"], {html=>1, long=>2} )</code></li>
+        You may also add parameters to customize your request:<br/>
+        <ul><code>Astro_Get( SOME_HASH_REFERENCE, ["dummy","text"], {html=>1} );</code><br/>
+        <code>Astro_Get( SOME_HASH_REFERENCE, ["dummy","text","SunRise,SunSet,SunAz,SunDistanceObserver"], {html=>1, long=>2} );</code></ul>
+        </li>
         </ul>
         <a name="Astroset"></a>
         <h4>Set</h4>
