@@ -2652,15 +2652,16 @@ sub Get($@) {
 
     if ( $wantsreading==1 && $h && ref($h) && scalar keys %{$h} > 0 ) {
       foreach (@readings) {
-        next if (ref($Astro{$_}) || $_ =~ /^\./);
+        next if (ref($Astro{$_}));
         $ret .= "\n" if ($ret ne "");
-        $ret .= encode_utf8(FormatReading( $_, $h, $lc_numeric ));
+        $ret .= encode_utf8(FormatReading( $_, $h, $lc_numeric )) unless($_ =~ /^\./);
+        $ret .= encode_utf8($Astro{$_}) if ($_ =~ /^\./);
       }
       $ret = "<html>" . $ret . "</html>" if (defined($html) && $html ne "0");
     }
     elsif ( $wantsreading==1 ) {
       foreach (@readings) {
-        next if (ref($Astro{$_}) || $_ =~ /^\./);
+        next if (ref($Astro{$_}));
         $ret .= "\n" if ($ret ne "");
         $ret .= encode_utf8($Astro{$_});
       }
