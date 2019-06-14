@@ -2659,7 +2659,7 @@ sub Get($@) {
         . FormatReading( "MoonDistance",         $h, $lc_numeric ) . " ("
         . FormatReading( "MoonDistanceObserver", $h, $lc_numeric ) . ")\n";
       $ret .=
-          $tt->{"position"} . ": "
+          $tt->{"position"} . ":  "
         . FormatReading( "MoonLon", $h, $lc_numeric ) . ", "
         . FormatReading( "MoonLat", $h, $lc_numeric ) . "; "
         . FormatReading( "MoonRa",  $h, $lc_numeric ) . ", "
