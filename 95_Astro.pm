@@ -2661,8 +2661,8 @@ sub Get($@) {
     }
     if( $wantsreading==1 ){
       if ($h && ref($h) && $h->{text}) {
-        return $json->encode(FormatReading($Astro{$a->[1]}, $h, $locale)) if (ref($json));
-        return toJSON(FormatReading($Astro{$a->[1]}, $h, $locale));
+        return $json->encode(FormatReading($a->[1], $h, $locale)) if (ref($json));
+        return toJSON(FormatReading($a->[1], $h, $locale));
       }
       return $json->encode($Astro{$a->[1]}) if (ref($json));
       return toJSON($Astro{$a->[1]});
@@ -2859,7 +2859,7 @@ sub Get($@) {
                 <code>get &lt;name&gt; json [&lt;reading&gt;] HH:MM[:SS] [-1|yesterday|+1|tomorrow]</code><br/>
                 <code>get &lt;name&gt; json [&lt;reading&gt;] YYYY-MM-DD HH:MM[:SS] [-1|yesterday|+1|tomorrow]</code>
                 <br />returns the complete set of an individual reading of astronomical data either for the current time, or for a day and time given in the argument. <code>yesterday</code>, <code>tomorrow</code> or any other integer number may be given at the end to get data relative to the given day and time.<br/>
-                Formatted values as described below may be generated in a sub-tree <code>text</code> by adding <code>text=1</code> to the request.</li>
+                Formatted values as described below may be generated in a subtree <code>text</code> by adding <code>text=1</code> to the request.</li>
             <li><a name="Astro_text"></a>
                 <code>get &lt;name&gt; text [&lt;reading&gt;] [-1|yesterday|+1|tomorrow]</code><br/>
                 <code>get &lt;name&gt; text [&lt;reading&gt;] YYYY-MM-DD [-1|yesterday|+1|tomorrow]</code><br/>
