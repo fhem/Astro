@@ -2667,7 +2667,7 @@ sub Get($@) {
         . FormatReading( "MoonAz",  $h, $lc_numeric ) . ", "
         . FormatReading( "MoonAlt", $h, $lc_numeric ) . "\n";
       $ret .=
-          FormatReading( "MoonDiameter", $h, $lc_numeric ) . ",  "
+          FormatReading( "MoonDiameter", $h, $lc_numeric ) . ", "
         . FormatReading( "MoonAge",    $h, $lc_numeric ) . ", "
         . FormatReading( "MoonPhaseN", $h, $lc_numeric ) . " = "
         . $Astro{MoonPhaseS} . ", "
