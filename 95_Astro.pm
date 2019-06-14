@@ -73,6 +73,7 @@ my %attrs = (
     "language"    => "EN,DE,ES,FR,IT,NL,PL",
     "latitude"    => undef,
     "lc_numeric"  => "en_EN.UTF-8,de_DE.UTF-8,es_ES.UTF-8,fr_FR.UTF-8,it_IT.UTF-8,nl_NL.UTF-8,pl_PL.UTF-8",
+    "lc_time"     => "en_EN.UTF-8,de_DE.UTF-8,es_ES.UTF-8,fr_FR.UTF-8,it_IT.UTF-8,nl_NL.UTF-8,pl_PL.UTF-8",
     "longitude"   => undef,
     "recomputeAt" => "multiple-strict,MoonRise,MoonSet,MoonTransit,NewDay,SunRise,SunSet,SunTransit,AstroTwilightEvening,AstroTwilightMorning,CivilTwilightEvening,CivilTwilightMorning,CustomTwilightEvening,CustomTwilightMorning",
     "timezone"    => undef,
@@ -84,15 +85,6 @@ my $tt;
 #-- Export variables to other programs
 our %transtable = (
     EN => {
-        "overview"    => "Summary",
-        "name"        => "Name",
-        "time"        => "Time",
-        "action"      => "Action",
-        "type"        => "Type",
-        "description" => "Description",
-        "profile"     => "Profile",
-
-        #--
         "coord"             => "Coordinates",
         "position"          => "Position",
         "longitude"         => "Longitude",
@@ -125,24 +117,12 @@ our %transtable = (
         "hoursofvisibility" => "Visibility",
 
         #--
-        "today"         => "Today",
-        "tomorrow"      => "Tomorrow",
-        "weekday"       => "Day of Week",
         "date"          => "Date",
         "jdate"         => "Julian date",
         "dayofyear"     => "day of year",
         "days"          => "days",
         "timezone"      => "Time Zone",
         "lmst"          => "Local Sidereal Time",
-
-        #--
-        "monday"    => [ "Monday",    "Mon" ],
-        "tuesday"   => [ "Tuesday",   "Tue" ],
-        "wednesday" => [ "Wednesday", "Wed" ],
-        "thursday"  => [ "Thursday",  "Thu" ],
-        "friday"    => [ "Friday",    "Fri" ],
-        "saturday"  => [ "Saturday",  "Sat" ],
-        "sunday"    => [ "Sunday",    "Sun" ],
 
         #--
         "season" => "Astronomical Season",
@@ -182,15 +162,6 @@ our %transtable = (
     },
 
     DE => {
-        "overview"    => "Zusammenfassung",
-        "name"        => "Name",
-        "time"        => "Zeit",
-        "action"      => "Aktion",
-        "type"        => "Typ",
-        "description" => "Beschreibung",
-        "profile"     => "Profil",
-
-        #--
         "coord"             => "Koordinaten",
         "position"          => "Position",
         "longitude"         => "Länge",
@@ -224,24 +195,12 @@ our %transtable = (
         "hoursofvisibility" => "Sichtbarkeit",
 
         #--
-        "today"         => "Heute",
-        "tomorrow"      => "Morgen",
-        "weekday"       => "Wochentag",
         "date"          => "Datum",
         "jdate"         => "Julianisches Datum",
         "dayofyear"     => "Tag d. Jahres",
         "days"          => "Tage",
         "timezone"      => "Zeitzone",
         "lmst"          => "Lokale Sternzeit",
-
-        #--
-        "monday"    => [ "Montag",     "Mo" ],
-        "tuesday"   => [ "Dienstag",   "Di" ],
-        "wednesday" => [ "Mittwoch",   "Mi" ],
-        "thursday"  => [ "Donnerstag", "Do" ],
-        "friday"    => [ "Freitag",    "Fr" ],
-        "saturday"  => [ "Samstag",    "Sa" ],
-        "sunday"    => [ "Sonntag",    "So" ],
 
         #--
         "season" => "Astronomische Jahreszeit",
@@ -281,15 +240,6 @@ our %transtable = (
     },
 
     ES => {
-        "overview"    => "Resumen",
-        "name"        => "Nombre",
-        "time"        => "Tiempo",
-        "action"      => "Acción",
-        "type"        => "Tipo",
-        "description" => "Descripción",
-        "profile"     => "Perfil",
-
-        #--
         "coord"             => "Coordenadas",
         "position"          => "Posición",
         "longitude"         => "Longitud",
@@ -322,24 +272,12 @@ our %transtable = (
         "hoursofvisibility" => "Visibilidad",
 
         #--
-        "today"         => "Hoy",
-        "tomorrow"      => "Mañana",
-        "weekday"       => "Dia de la semana",
         "date"          => "Fecha",
         "jdate"         => "Fecha de Julian",
         "dayofyear"     => "Día del año",
         "days"          => "Días",
         "timezone"      => "Zona horaria",
         "lmst"          => "Hora sideral local",
-
-        #--
-        "monday"    => [ "Lunes",      "Lun" ],
-        "tuesday"   => [ "Martes",     "Mar" ],
-        "wednesday" => [ "Miércoles",  "Mié" ],
-        "thursday"  => [ "Jueves",     "Jue" ],
-        "friday"    => [ "Friday",     "Fri" ],
-        "saturday"  => [ "Viernes",    "Vie" ],
-        "sunday"    => [ "Domingo",    "Dom" ],
 
         #--
         "season" => "Temporada Astronomica",
@@ -379,15 +317,6 @@ our %transtable = (
     },
 
     FR => {
-        "overview"    => "Résumé",
-        "name"        => "Nom",
-        "time"        => "Temps",
-        "action"      => "Action",
-        "type"        => "Type",
-        "description" => "Description",
-        "profile"     => "Profil",
-
-        #--
         "coord"             => "Coordonnées",
         "position"          => "Position",
         "longitude"         => "Longitude",
@@ -420,24 +349,12 @@ our %transtable = (
         "hoursofvisibility" => "Visibilité",
 
         #--
-        "today"         => "Aujourd'hui",
-        "tomorrow"      => "Demain",
-        "weekday"       => "Jour de la semaine",
         "date"          => "Date",
         "jdate"         => "Date de Julien",
         "dayofyear"     => "jour de l'année",
         "days"          => "jours",
         "timezone"      => "Fuseau horaire",
         "lmst"          => "Heure sidérale locale",
-
-        #--
-        "monday"    => [ "Lundi",    "Lun" ],
-        "tuesday"   => [ "Mardi",    "Mar" ],
-        "wednesday" => [ "Mercredi", "Mer" ],
-        "thursday"  => [ "Jeudi",    "Jeu" ],
-        "friday"    => [ "Vendredi", "Ven" ],
-        "saturday"  => [ "Samedi",   "Sam" ],
-        "sunday"    => [ "Dimanche", "Dim" ],
 
         #--
         "season" => "Saison Astronomique",
@@ -477,15 +394,6 @@ our %transtable = (
     },
 
     IT => {
-        "overview"    => "Sommario",
-        "name"        => "Nome",
-        "time"        => "Tempo",
-        "action"      => "Azione",
-        "type"        => "Genere",
-        "description" => "Descrizione",
-        "profile"     => "Profilo",
-
-        #--
         "coord"             => "Coordinate",
         "position"          => "Posizione",
         "longitude"         => "Longitudine",
@@ -518,24 +426,12 @@ our %transtable = (
         "hoursofvisibility" => "Visibilità",
 
         #--
-        "today"         => "Oggi",
-        "tomorrow"      => "Domani",
-        "weekday"       => "Giorno della settimana",
         "date"          => "Data",
         "jdate"         => "Data giuliana",
         "dayofyear"     => "giorno dell'anno",
         "days"          => "giorni",
         "timezone"      => "Fuso orario",
         "lmst"          => "Tempo siderale locale",
-
-        #--
-        "monday"    => [ "Lunedi",     "Lun" ],
-        "tuesday"   => [ "Martedì",   "Mar" ],
-        "wednesday" => [ "Mercoledì", "Mer" ],
-        "thursday"  => [ "Giovedi",    "Gio" ],
-        "friday"    => [ "Venerdì",   "Ven" ],
-        "saturday"  => [ "Sabato",     "Sab" ],
-        "sunday"    => [ "Domenica",   "Dom" ],
 
         #--
         "season" => "Stagione Astronomica",
@@ -575,15 +471,6 @@ our %transtable = (
     },
 
     NL => {
-        "overview"    => "Samenvatting",
-        "name"        => "Naam",
-        "time"        => "Tijd",
-        "action"      => "Actie",
-        "type"        => "Type",
-        "description" => "Omschrijving",
-        "profile"     => "Profiel",
-
-        #--
         "coord"             => "Coördinaten",
         "position"          => "Positie",
         "longitude"         => "Lengtegraad",
@@ -616,24 +503,12 @@ our %transtable = (
         "hoursofvisibility" => "Zichtbaarheid",
 
         #--
-        "today"         => "Vandaag",
-        "tomorrow"      => "Morgen",
-        "weekday"       => "Dag van de Week",
         "date"          => "Datum",
         "jdate"         => "Juliaanse Datum",
         "dayofyear"     => "Dag van het Jaar",
         "days"          => "Dagen",
         "timezone"      => "Tijdzone",
         "lmst"          => "Lokale Sterrentijd",
-
-        #--
-        "monday"    => [ "Maandag",   "Maa" ],
-        "tuesday"   => [ "Dinsdag",   "Din" ],
-        "wednesday" => [ "Woensdag",  "Woe" ],
-        "thursday"  => [ "Donderdag", "Don" ],
-        "friday"    => [ "Vrijdag",   "Vri" ],
-        "saturday"  => [ "Zaterdag",  "Zat" ],
-        "sunday"    => [ "Zondag",    "Zon" ],
 
         #--
         "season" => "Astronomisch Seizoen",
@@ -673,15 +548,6 @@ our %transtable = (
     },
 
     PL => {
-        "overview"    => "Streszczenie",
-        "name"        => "Imię",
-        "time"        => "Czas",
-        "action"      => "Akcja",
-        "type"        => "Rodzaj",
-        "description" => "Opis",
-        "profile"     => "Profil",
-
-        #--
         "coord"             => "Współrzędne",
         "position"          => "Pozycja",
         "longitude"         => "Długość",
@@ -714,24 +580,12 @@ our %transtable = (
         "hoursofvisibility" => "Widoczność",
 
         #--
-        "today"         => "Dzisiaj",
-        "tomorrow"      => "Jutro",
-        "weekday"       => "Dzień powszedni",
         "date"          => "Data",
         "jdate"         => "Juliańska data",
         "dayofyear"     => "dzień roku",
         "days"          => "dni",
         "timezone"      => "Strefa czasowa",
         "lmst"          => "Lokalny czas gwiazdowy",
-
-        #--
-        "monday"    => [ "Poniedziałek",  "Pon" ],
-        "tuesday"   => [ "Wtorek",        "Wto" ],
-        "wednesday" => [ "środa",         "śro" ],
-        "thursday"  => [ "Czwartek",      "Czw" ],
-        "friday"    => [ "Piątek",        "Pią" ],
-        "saturday"  => [ "Sobota",        "Sob" ],
-        "sunday"    => [ "Niedziela",     "Nie" ],
 
         #--
         "season" => "Sezon Astronomiczny",
@@ -836,7 +690,7 @@ _LoadOptionalPackages();
 
 sub SunRise($$$$$$$$);
 sub MoonRise($$$$$$$);
-sub SetTime(;$$);
+sub SetTime(;$$$);
 sub Compute($;$);
 
 ########################################################################################################
@@ -1921,8 +1775,13 @@ sub MoonRise($$$$$$$){
 # 
 ########################################################################################################
 
-sub SetTime (;$$) {
-    my ( $time, $tz ) = @_;
+sub SetTime (;$$$) {
+    my ( $time, $tz, $lc_time ) = @_;
+
+    #-- readjust locale
+    my $old_lctime = setlocale(LC_TIME);
+    setlocale(LC_TIME, $lc_time) if ($lc_time);
+    use locale ':not_characters';
 
     #-- readjust timezone
     local $ENV{TZ} = $tz if ($tz);
@@ -1944,13 +1803,30 @@ sub SetTime (;$$) {
     $Date{sec}       = $sec;
     $Date{isdst}     = $isdst;
     #-- broken on windows
-    #$Date{zonedelta} = (strftime "%z", localtime)/100;
+    #$Date{zonedelta} = (strftime "%z", localtime($time))/100;
     $Date{zonedelta} = _tzoffset($time) / 100;
     #-- half broken in windows
     $Date{dayofyear} = 1 * strftime( "%j", localtime($time) );
 
+    $Date{wdayl} = strftime( "%A", localtime($time) );
+    $Date{wdays} = strftime( "%a", localtime($time) );
+    $Date{monthl} = strftime( "%B", localtime($time) );
+    $Date{months} = strftime( "%b", localtime($time) );
+    $Date{datetime} = strftime( "%c", localtime($time) );
+    $Date{week} = strftime( "%V", localtime($time) );
+    $Date{wday} = strftime( "%w", localtime($time) );
+    $Date{time} = strftime( "%X", localtime($time) );
+    $Date{date} = strftime( "%x", localtime($time) );
+    $Date{tz} = strftime( "%Z", localtime($time) );
+
+    delete $Date{tz} if (!$Date{tz} || $Date{tz} eq "" || $Date{tz} eq " ");
+
     delete local $ENV{TZ};
     tzset();
+
+    setlocale(LC_TIME, "");
+    setlocale(LC_TIME, $old_lctime);
+    no locale;
 
     return (undef);
 }
@@ -2225,11 +2101,12 @@ sub Compute($;$){
   $Astro{MoonHrsInvisible} = HHMM($mooninvisible);
   
   #-- fix date
-  $Astro{ObsDate}             = sprintf("%02d.%02d.%04d",$Date{day},$Date{month},$Date{year});
-  $Astro{ObsTime}             = sprintf("%02d:%02d:%02d",$Date{hour},$Date{min},$Date{sec});
+  $Astro{ObsDate}             = $Date{date};
+  $Astro{ObsTime}             = $Date{time};
   $Astro{".timestamp"}        = $Date{timestamp};
   $Astro{".timeday"}          = $Date{timeday};
   $Astro{ObsTimezone}         = $Date{zonedelta};
+  $Astro{ObsTimezoneS}        = $Date{tz} if($Date{tz});
   $Astro{ObsDayofyear}        = $Date{dayofyear};
   $Astro{ObsIsDST}            = $Date{isdst};
 
@@ -2328,9 +2205,18 @@ sub Update($@) {
   return undef if (IsDisabled($name));
 
   my $tz = AttrVal( $name, "timezone", AttrVal( "global", "timezone", undef ) );
+  my $lang = AttrVal( $name, "language", AttrVal( "global", "language", undef ) );
+  my $lc_time = AttrVal(
+      $name,
+      "lc_time",
+      AttrVal(
+          "global", "lc_time",
+          ( $lang ? lc($lang) . "_" . uc($lang) . ".UTF-8" : undef )
+      )
+  );
   my $now = gettimeofday();    # conserve timestamp before recomputing
 
-  SetTime(undef, $tz);
+  SetTime(undef, $tz, $lc_time);
   Compute($hash);
 
   my @next;
@@ -2380,7 +2266,7 @@ sub Update($@) {
 ########################################################################################################
 
 sub FormatReading($$;$) {
-  my ( $r, $h, $locale ) = @_;
+  my ( $r, $h, $lc_numeric ) = @_;
   my $ret;
 
   my $f = "%s";
@@ -2413,7 +2299,7 @@ sub FormatReading($$;$) {
   $f = "%2.1f" if ( $r eq "SunLon" );
 
   $ret = sprintf( $f, $Astro{$r} );
-  $ret = UConv::decimal_mark( $ret, $locale );
+  $ret = UConv::decimal_mark( $ret, $lc_numeric );
 
   if ( $h && ref($h) ) {
 
@@ -2603,10 +2489,31 @@ sub Get($@) {
   my $wantsreading = 0;
   my $dayOffset = 0;
   my $tz = AttrVal( $name, "timezone", AttrVal( "global", "timezone", undef ) );
-  my $locale = AttrVal( $name, "lc_numeric", AttrVal( "global", "lc_numeric", undef ) );
-  if ($h && ref($h)) {
-    $tz = $h->{timezone} if (defined($h->{timezone}));
-    $locale = $h->{lc_numeric} if (defined($h->{lc_numeric}));
+  my $lang = AttrVal( $name, "language", AttrVal( "global", "language", undef ) );
+  my $lc_numeric = AttrVal(
+      $name,
+      "lc_numeric",
+      AttrVal(
+          "global", "lc_numeric",
+          ( $lang ? lc($lang) . "_" . uc($lang) . ".UTF-8" : undef )
+      )
+  );
+  my $lc_time = AttrVal(
+      $name,
+      "lc_time",
+      AttrVal(
+          "global", "lc_time",
+          ( $lang ? lc($lang) . "_" . uc($lang) . ".UTF-8" : undef )
+      )
+  );
+  if ( $h && ref($h) ) {
+    $tz         = $h->{timezone}   if ( defined( $h->{timezone} ) );
+    $lc_numeric = $h->{lc_numeric} if ( defined( $h->{lc_numeric} ) );
+    $lc_numeric = lc( $h->{language} ) . "_" . uc( $h->{language} ) . ".UTF-8"
+      if ( !$lc_numeric && defined( $h->{language} ) );
+    $lc_time = $h->{lc_time} if ( defined( $h->{lc_time} ) );
+    $lc_time = lc( $h->{language} ) . "_" . uc( $h->{language} ) . ".UTF-8"
+      if ( !$lc_time && defined( $h->{language} ) );
   }
 
   #-- fill %Astro if it is still empty after restart to avoid warnings
@@ -2639,13 +2546,13 @@ sub Get($@) {
               defined($2) ? $2 : (defined($8) ? $8 : 0),
               defined($1) ? $1 : (defined($7) ? $7 : 12),
               (defined($4)? ($6,$5-1,$4) : (localtime(gettimeofday()))[3,4,5])
-          ) + ( $dayOffset * 86400. ), $tz
+          ) + ( $dayOffset * 86400. ), $tz, $lc_time
         )
     }else{
       return "[FHEM::Astro::Get] $name has improper time specification $str, use YYYY-MM-DD [HH:MM:SS] [-1|yesterday|+1|tomorrow]";
     }
   }else{
-    SetTime(gettimeofday + ($dayOffset * 86400.), $tz);
+    SetTime(gettimeofday + ($dayOffset * 86400.), $tz, $lc_time);
   }
 
   if( $a->[0] eq "version") {
@@ -2661,8 +2568,8 @@ sub Get($@) {
     }
     if( $wantsreading==1 ){
       if ($h && ref($h) && $h->{text}) {
-        return $json->encode(FormatReading($a->[1], $h, $locale)) if (ref($json));
-        return toJSON(FormatReading($a->[1], $h, $locale));
+        return $json->encode(FormatReading($a->[1], $h, $lc_numeric)) if (ref($json));
+        return toJSON(FormatReading($a->[1], $h, $lc_numeric));
       }
       return $json->encode($Astro{$a->[1]}) if (ref($json));
       return toJSON($Astro{$a->[1]});
@@ -2670,7 +2577,7 @@ sub Get($@) {
       if ($h && ref($h) && $h->{text}) {
         foreach (keys %Astro) {
           next if (ref($Astro{$_}) || $_ =~ /^\./);
-          $Astro{text}{$_} = FormatReading($_, $h, $locale);
+          $Astro{text}{$_} = FormatReading($_, $h, $lc_numeric);
         }
       }
       return $json->encode(\%Astro) if (ref($json));
@@ -2682,7 +2589,7 @@ sub Get($@) {
     my $ret;
 
     if ( $wantsreading==1 && $h && ref($h) && scalar keys %{$h} > 0 ) {
-      $ret = FormatReading( $a->[1], $h, $locale );
+      $ret = FormatReading( $a->[1], $h, $lc_numeric );
     }
     elsif ( $wantsreading==1 ) {
       $ret = $Astro{ $a->[1] };
@@ -2690,21 +2597,21 @@ sub Get($@) {
     else {
       $h->{long} = 1;
 
-      $ret = FormatReading( "ObsDate", $h, $locale ) . " " . $Astro{ObsTime};
+      $ret = FormatReading( "ObsDate", $h, $lc_numeric ) . " " . $Astro{ObsTime};
       $ret .= (
         ( $Astro{ObsIsDST} == 1 )
         ? " (" . FormatReading( "ObsIsDST", $h ) . ")\n"
         : "\n"
       );
-      $ret .= FormatReading( "ObsJD", $h, $locale ) . ", "
-        . FormatReading( "ObsDayofyear", $h, $locale ) . "\n";
+      $ret .= FormatReading( "ObsJD", $h, $lc_numeric ) . ", "
+        . FormatReading( "ObsDayofyear", $h, $lc_numeric ) . "\n";
       $ret .= FormatReading( "ObsSeason", $h ) . ", "
         . FormatReading( "ObsTimezone", $h ) . "\n";
       $ret .=
           $tt->{"coord"} . " "
-        . FormatReading( "ObsLon", $h, $locale ) . ", "
-        . FormatReading( "ObsLat", $h, $locale ) . ", "
-        . FormatReading( "ObsAlt", $h, $locale ) . "\n";
+        . FormatReading( "ObsLon", $h, $lc_numeric ) . ", "
+        . FormatReading( "ObsLat", $h, $lc_numeric ) . ", "
+        . FormatReading( "ObsAlt", $h, $lc_numeric ) . "\n";
       $ret .= FormatReading( "ObsLMST", $h ) . "\n\n";
 
       $ret .= "\n" . $tt->{"sun"} . "\n";
@@ -2722,16 +2629,16 @@ sub Get($@) {
         . $Astro{AstroTwilightEvening} . "\n";
       $ret .=
           $tt->{"distance"} . ":  "
-        . FormatReading( "SunDistance",         $h, $locale ) . " ("
-        . FormatReading( "SunDistanceObserver", $h, $locale ) . ")\n";
+        . FormatReading( "SunDistance",         $h, $lc_numeric ) . " ("
+        . FormatReading( "SunDistanceObserver", $h, $lc_numeric ) . ")\n";
       $ret .=
           $tt->{"position"} . ":  "
-        . FormatReading( "SunLon", $h, $locale ) . ", "
-        . FormatReading( "SunRa",  $h, $locale ) . ", "
-        . FormatReading( "SunDec", $h, $locale ) . "; "
-        . FormatReading( "SunAz",  $h, $locale ) . ", "
-        . FormatReading( "SunAlt", $h, $locale ) . "\n";
-      $ret .= FormatReading( "SunDiameter", $h, $locale ) . ", "
+        . FormatReading( "SunLon", $h, $lc_numeric ) . ", "
+        . FormatReading( "SunRa",  $h, $lc_numeric ) . ", "
+        . FormatReading( "SunDec", $h, $lc_numeric ) . "; "
+        . FormatReading( "SunAz",  $h, $lc_numeric ) . ", "
+        . FormatReading( "SunAlt", $h, $lc_numeric ) . "\n";
+      $ret .= FormatReading( "SunDiameter", $h, $lc_numeric ) . ", "
         . FormatReading( "SunSign", $h ) . "\n\n";
 
       $ret .= "\n" . $tt->{"moon"} . "\n";
@@ -2742,20 +2649,20 @@ sub Get($@) {
       $ret .= FormatReading( "MoonHrsVisible", $h ) . "\n";
       $ret .=
           $tt->{"distance"} . ":  "
-        . FormatReading( "MoonDistance",         $h, $locale ) . " ("
-        . FormatReading( "MoonDistanceObserver", $h, $locale ) . ")\n";
+        . FormatReading( "MoonDistance",         $h, $lc_numeric ) . " ("
+        . FormatReading( "MoonDistanceObserver", $h, $lc_numeric ) . ")\n";
       $ret .=
-          $tt->{"position"} . ":  "
-        . FormatReading( "MoonLon", $h, $locale ) . ", "
-        . FormatReading( "MoonLat", $h, $locale ) . "; "
-        . FormatReading( "MoonRa",  $h, $locale ) . ", "
-        . FormatReading( "MoonDec", $h, $locale ) . ", "
-        . FormatReading( "MoonAz",  $h, $locale ) . ", "
-        . FormatReading( "MoonAlt", $h, $locale ) . "\n";
+          $tt->{"position"} . ": "
+        . FormatReading( "MoonLon", $h, $lc_numeric ) . ", "
+        . FormatReading( "MoonLat", $h, $lc_numeric ) . "; "
+        . FormatReading( "MoonRa",  $h, $lc_numeric ) . ", "
+        . FormatReading( "MoonDec", $h, $lc_numeric ) . ", "
+        . FormatReading( "MoonAz",  $h, $lc_numeric ) . ", "
+        . FormatReading( "MoonAlt", $h, $lc_numeric ) . "\n";
       $ret .=
-          FormatReading( "MoonDiameter", $h, $locale ) . ",  "
-        . FormatReading( "MoonAge",    $h, $locale ) . ", "
-        . FormatReading( "MoonPhaseN", $h, $locale ) . " = "
+          FormatReading( "MoonDiameter", $h, $lc_numeric ) . ",  "
+        . FormatReading( "MoonAge",    $h, $lc_numeric ) . ", "
+        . FormatReading( "MoonPhaseN", $h, $lc_numeric ) . " = "
         . $Astro{MoonPhaseS} . ", "
         . FormatReading( "MoonSign", $h );
     }
@@ -2806,7 +2713,7 @@ sub Get($@) {
         <ul>
         <li><i>Date,Dayofyear</i> = date</li>
         <li><i>JD</i> = Julian date</li>
-        <li><i>Time,Timezone</i> obvious meaning</li>
+        <li><i>Time,Timezone,TimezoneS</i> obvious meaning</li>
         <li><i>IsDST</i> = 1 if running on daylight savings time, 0 otherwise</li>
         <li><i>GMST,LMST</i> = Greenwich and Local Mean Sidereal Time (in HH:MM)</li>
 	    </ul>
@@ -2888,7 +2795,10 @@ sub Get($@) {
                 <br />A language may be set to overwrite global attribute settings.</li>
             <li><a name="Astro_lc_numeric"></a>
                 <code>&lt;lc_numeric&gt;</code>
-                <br />Set regional settings to format numerical values in textual output.</li>
+                <br />Set regional settings to format numerical values in textual output. If not set, it will generate the locale based on the attribute <i>language</i> (if set).</li>
+            <li><a name="Astro_lc_time"></a>
+                <code>&lt;lc_time&gt;</code>
+                <br />Set regional settings to format time related values in textual output. If not set, it will generate the locale based on the attribute <i>language</i> (if set).</li>
             <li><a name="Astro_recomputeAt"></a>
                 <code>&lt;recomputeAt&gt;</code>
                 <br />Enforce recomputing values at specific event times, independant from update interval. This attribute contains a list of one or many of the following values:<br />
