@@ -34,7 +34,9 @@ package FHEM::Astro;
 use strict;
 use warnings; 
 use POSIX;
+use utf8;
 
+use Encode;
 use GPUtils qw(GP_Import);
 use Math::Trig;
 use Time::HiRes qw(gettimeofday);
@@ -2258,7 +2260,7 @@ sub Update($@) {
 
   readingsBeginUpdate($hash);
   foreach my $key (keys %Astro){
-    readingsBulkUpdateIfChanged($hash,$key,$Astro{$key});
+    readingsBulkUpdateIfChanged($hash,$key,encode_utf8($Astro{$key}));
   }
   readingsEndUpdate($hash,1); 
   readingsSingleUpdate($hash,"state","Updated",1);
@@ -2306,44 +2308,44 @@ sub FormatReading($$;$) {
   $f = "%2.1f" if ( $r eq "SunLon" );
 
   $ret = sprintf( $f, $Astro{$r} );
-  $ret = UConv::decimal_mark( $ret, $lc_numeric );
+  $ret = UConv::decimal_mark( $ret, $lc_numeric )
+    unless ( $h && ref($h) && defined( $h->{html} ) && $h->{html} eq "0" );
 
-  if ( $h && ref($h) ) {
+  if ( $h && ref($h) && ( !$h->{html} || $h->{html} ne "0" ) ) {
 
     #-- add unit if desired
     if ( $h->{unit}
-        || ( $h->{long} && ( !defined( $h->{unit} ) || $h->{unit} ne "0" ) )
-      )
+        || ( $h->{long} && ( !defined( $h->{unit} ) || $h->{unit} ne "0" ) ) )
     {
-      $ret .= "°"                if ( $r eq "MoonAge" );
-      $ret .= "°"                if ( $r eq "MoonAlt" );
-      $ret .= "°"                if ( $r eq "MoonAz" );
-      $ret .= "°"                if ( $r eq "MoonDec" );
-      $ret .= "'"                 if ( $r eq "MoonDiameter" );
-      $ret .= " km"               if ( $r eq "MoonDistance" );
-      $ret .= " km"               if ( $r eq "MoonDistanceObserver" );
-      $ret .= " h"                if ( $r eq "MoonHrsInvisible" );
-      $ret .= " h"                if ( $r eq "MoonHrsVisible" );
-      $ret .= "°"                if ( $r eq "MoonLat" );
-      $ret .= "°"                if ( $r eq "MoonLon" );
-      $ret .= " h"                if ( $r eq "MoonRa" );
-      $ret .= " m"                if ( $r eq "ObsAlt" );
-      $ret .= "."                 if ( $r eq "ObsDayofyear" );
-      $ret .= "°"                if ( $r eq "ObsHorEvening" );
-      $ret .= "°"                if ( $r eq "ObsHorMorning" );
-      $ret .= " " . $tt->{"days"} if ( $r eq "ObsJD" );
-      $ret .= "°"                if ( $r eq "ObsLat" );
-      $ret .= "°"                if ( $r eq "ObsLon" );
-      $ret .= "°"                if ( $r eq "SunAlt" );
-      $ret .= "°"                if ( $r eq "SunAz" );
-      $ret .= "°"                if ( $r eq "SunDec" );
-      $ret .= "'"                 if ( $r eq "SunDiameter" );
-      $ret .= " km"               if ( $r eq "SunDistance" );
-      $ret .= " km"               if ( $r eq "SunDistanceObserver" );
-      $ret .= " h"                if ( $r eq "SunHrsInvisible" );
-      $ret .= " h"                if ( $r eq "SunHrsVisible" );
-      $ret .= "°"                if ( $r eq "SunLon" );
-      $ret .= " h"                if ( $r eq "SunRa" );
+      $ret .= "°"                         if ( $r eq "MoonAge" );
+      $ret .= "°"                         if ( $r eq "MoonAlt" );
+      $ret .= "°"                         if ( $r eq "MoonAz" );
+      $ret .= "°"                         if ( $r eq "MoonDec" );
+      $ret .= "′"                         if ( $r eq "MoonDiameter" );
+      $ret .= chr(0x00A0) . "km"          if ( $r eq "MoonDistance" );
+      $ret .= chr(0x00A0) . "km"          if ( $r eq "MoonDistanceObserver" );
+      $ret .= chr(0x00A0) . "h"           if ( $r eq "MoonHrsInvisible" );
+      $ret .= chr(0x00A0) . "h"           if ( $r eq "MoonHrsVisible" );
+      $ret .= "°"                         if ( $r eq "MoonLat" );
+      $ret .= "°"                         if ( $r eq "MoonLon" );
+      $ret .= chr(0x00A0) . "h"           if ( $r eq "MoonRa" );
+      $ret .= chr(0x00A0) . "m"           if ( $r eq "ObsAlt" );
+      $ret .= "."                         if ( $r eq "ObsDayofyear" );
+      $ret .= "°"                         if ( $r eq "ObsHorEvening" );
+      $ret .= "°"                         if ( $r eq "ObsHorMorning" );
+      $ret .= chr(0x00A0) . $tt->{"days"} if ( $r eq "ObsJD" );
+      $ret .= "°"                         if ( $r eq "ObsLat" );
+      $ret .= "°"                         if ( $r eq "ObsLon" );
+      $ret .= "°"                         if ( $r eq "SunAlt" );
+      $ret .= "°"                         if ( $r eq "SunAz" );
+      $ret .= "°"                         if ( $r eq "SunDec" );
+      $ret .= "′"                         if ( $r eq "SunDiameter" );
+      $ret .= chr(0x00A0) . "km"          if ( $r eq "SunDistance" );
+      $ret .= chr(0x00A0) . "km"          if ( $r eq "SunDistanceObserver" );
+      $ret .= chr(0x00A0) . "h"           if ( $r eq "SunHrsInvisible" );
+      $ret .= chr(0x00A0) . "h"           if ( $r eq "SunHrsVisible" );
+      $ret .= "°"                         if ( $r eq "SunLon" );
+      $ret .= chr(0x00A0) . "h"           if ( $r eq "SunRa" );
     }
 
     #-- add text if desired
@@ -2495,6 +2497,7 @@ sub Get($@) {
 
   my $wantsreading = 0;
   my $dayOffset = 0;
+  my $html = defined( $hash->{CL} ) && $hash->{CL}{TYPE} eq "FHEMWEB" ? 1 : undef;
   my $tz = AttrVal( $name, "timezone", AttrVal( "global", "timezone", undef ) );
   my $lang = AttrVal( $name, "language", AttrVal( "global", "language", undef ) );
   my $lc_numeric = AttrVal(
@@ -2514,6 +2517,7 @@ sub Get($@) {
       )
   );
   if ( $h && ref($h) ) {
+    $html       = $h->{html}       if ( defined( $h->{html} ) );
     $tz         = $h->{timezone}   if ( defined( $h->{timezone} ) );
     $lc_numeric = $h->{lc_numeric} if ( defined( $h->{lc_numeric} ) );
     $lc_numeric = lc( $h->{language} ) . "_" . uc( $h->{language} ) . ".UTF-8"
@@ -2575,11 +2579,11 @@ sub Get($@) {
     }
     if( $wantsreading==1 ){
       if ($h && ref($h) && $h->{text}) {
-        return $json->encode(FormatReading($a->[1], $h, $lc_numeric)) if (ref($json));
-        return toJSON(FormatReading($a->[1], $h, $lc_numeric));
+        return encode_utf8($json->encode(FormatReading($a->[1], $h, $lc_numeric))) if (ref($json));
+        return encode_utf8(toJSON(FormatReading($a->[1], $h, $lc_numeric)));
       }
-      return $json->encode($Astro{$a->[1]}) if (ref($json));
-      return toJSON($Astro{$a->[1]});
+      return encode_utf8($json->encode($Astro{$a->[1]})) if (ref($json));
+      return encode_utf8(toJSON($Astro{$a->[1]}));
     }else{
       if ($h && ref($h) && $h->{text}) {
         foreach (keys %Astro) {
@@ -2587,8 +2591,8 @@ sub Get($@) {
           $Astro{text}{$_} = FormatReading($_, $h, $lc_numeric);
         }
       }
-      return $json->encode(\%Astro) if (ref($json));
-      return toJSON(\%Astro);
+      return encode_utf8($json->encode(\%Astro)) if (ref($json));
+      return encode_utf8(toJSON(\%Astro));
     }
 
   }elsif( $a->[0] eq "text") {
@@ -2596,10 +2600,12 @@ sub Get($@) {
     my $ret;
 
     if ( $wantsreading==1 && $h && ref($h) && scalar keys %{$h} > 0 ) {
-      $ret = FormatReading( $a->[1], $h, $lc_numeric );
+      $ret = encode_utf8(FormatReading( $a->[1], $h, $lc_numeric ));
+      $ret = "<html>" . $ret . "</html>" if (defined($html) && $html ne "0");
     }
     elsif ( $wantsreading==1 ) {
-      $ret = $Astro{ $a->[1] };
+      $ret = encode_utf8($Astro{ $a->[1] });
+      $ret = "<html>" . $ret . "</html>" if (defined($html) && $html ne "0");
     }
     else {
       $h->{long} = 1;
@@ -2672,6 +2678,13 @@ sub Get($@) {
         . FormatReading( "MoonPhaseN", $h, $lc_numeric ) . " = "
         . $Astro{MoonPhaseS} . ", "
         . FormatReading( "MoonSign", $h );
+
+      if ($html && $html eq "1") {
+        $ret =~ s/   /&nbsp;&nbsp;&nbsp;/g;
+        $ret =~ s/  /&nbsp;&nbsp;/g;
+        $ret =~ s/\n/<br\/>/g;
+        $ret = "<html>" . $ret . "</html>";        
+      }
     }
 
     return $ret;
@@ -2879,6 +2892,7 @@ sub Get($@) {
   "prereqs": {
     "runtime": {
       "requires": {
+        "Encode": 0,
         "GPUtils": 0,
         "Math::Trig": 0,
         "POSIX": 0,
