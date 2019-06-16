@@ -2296,7 +2296,7 @@ sub Update($@) {
 
   readingsBeginUpdate($hash);
   foreach my $key (keys %Astro){
-    readingsBulkUpdateIfChanged($hash,$key,encode_utf8($Astro{$key}));
+    readingsBulkUpdateIfChanged($hash,$key,$Astro{$key});
   }
   readingsEndUpdate($hash,1); 
   readingsSingleUpdate($hash,"state","Updated",1);
@@ -2635,9 +2635,8 @@ sub Get($@) {
         }
         $ret{$_} = $Astro{$_};
       }
-
-      return encode_utf8($json->encode(\%ret)) if (ref($json));
-      return encode_utf8(toJSON(\%ret));
+      return $json->encode(\%ret) if (ref($json));
+      return toJSON(\%ret);
     }else{
       if ($h && ref($h) && ($h->{text} || $h->{unit} || $h->{long})) {
         foreach (keys %Astro) {
@@ -2645,8 +2644,8 @@ sub Get($@) {
           $Astro{text}{$_} = FormatReading($_, $h, $lc_numeric);
         }
       }
-      return encode_utf8($json->encode(\%Astro)) if (ref($json));
-      return encode_utf8(toJSON(\%Astro));
+      return $json->encode(\%Astro) if (ref($json));
+      return toJSON(\%Astro);
     }
 
   }elsif( $a->[0] eq "text") {
@@ -2749,7 +2748,7 @@ sub Get($@) {
     if ($html && $html eq "1") {
       $ret =~ s/   /&nbsp;&nbsp;&nbsp;/g;
       $ret =~ s/  /&nbsp;&nbsp;/g;
-      $ret =~ s/\n/<br\/>/g;
+      $ret =~ s/\n/<br\/>\n/g;
     }
 
     return $ret;
