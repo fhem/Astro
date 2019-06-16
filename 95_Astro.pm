@@ -1063,6 +1063,7 @@ sub _LoadOptionalPackages {
     } else {
       $json->allow_nonref;
       $json->shrink;
+      $json->utf8;
     }
 }
 
@@ -1844,8 +1845,8 @@ sub SetTime (;$$$) {
     $Date{monthl} = strftime( "%B", localtime($time) );
     $Date{months} = strftime( "%b", localtime($time) );
     $Date{datetime} = strftime( "%c", localtime($time) );
-    $Date{week} = strftime( "%V", localtime($time) );
-    $Date{wday} = strftime( "%w", localtime($time) );
+    $Date{week} = 1 * strftime( "%V", localtime($time) );
+    $Date{wday} = 1 * strftime( "%w", localtime($time) );
     $Date{time} = strftime( "%X", localtime($time) );
     $Date{date} = strftime( "%x", localtime($time) );
     $Date{tz} = strftime( "%Z", localtime($time) );
@@ -2607,7 +2608,7 @@ sub Get($@) {
       return "[FHEM::Astro::Get] $name has improper time specification $str, use YYYY-MM-DD [HH:MM:SS] [-1|yesterday|+1|tomorrow]";
     }
   }else{
-    SetTime(gettimeofday + ($dayOffset * 86400.), $tz, $lc_time);
+    SetTime(gettimeofday() + ($dayOffset * 86400.), $tz, $lc_time);
   }
 
   #-- disable automatic links to FHEM devices
