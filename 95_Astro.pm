@@ -119,6 +119,7 @@ our %transtable = (
         "hoursofvisibility" => "Visibility",
 
         #--
+        "time"          => "Time",
         "date"          => "Date",
         "jdate"         => "Julian date",
         "dayofyear"     => "day of year",
@@ -197,6 +198,7 @@ our %transtable = (
         "hoursofvisibility" => "Sichtbarkeit",
 
         #--
+        "time"          => "Zeit",
         "date"          => "Datum",
         "jdate"         => "Julianisches Datum",
         "dayofyear"     => "Tag d. Jahres",
@@ -274,6 +276,7 @@ our %transtable = (
         "hoursofvisibility" => "Visibilidad",
 
         #--
+        "time"          => "Tiempo",
         "date"          => "Fecha",
         "jdate"         => "Fecha de Julian",
         "dayofyear"     => "Día del año",
@@ -351,6 +354,7 @@ our %transtable = (
         "hoursofvisibility" => "Visibilité",
 
         #--
+        "time"          => "Temps",
         "date"          => "Date",
         "jdate"         => "Date de Julien",
         "dayofyear"     => "jour de l'année",
@@ -428,6 +432,7 @@ our %transtable = (
         "hoursofvisibility" => "Visibilità",
 
         #--
+        "time"          => "Tempo",
         "date"          => "Data",
         "jdate"         => "Data giuliana",
         "dayofyear"     => "giorno dell'anno",
@@ -505,6 +510,7 @@ our %transtable = (
         "hoursofvisibility" => "Zichtbaarheid",
 
         #--
+        "time"          => "Tijd",
         "date"          => "Datum",
         "jdate"         => "Juliaanse Datum",
         "dayofyear"     => "Dag van het Jaar",
@@ -582,6 +588,7 @@ our %transtable = (
         "hoursofvisibility" => "Widoczność",
 
         #--
+        "time"          => "Czas",
         "date"          => "Data",
         "jdate"         => "Juliańska data",
         "dayofyear"     => "dzień roku",
@@ -2654,8 +2661,9 @@ sub Get($@) {
 
     if ( $wantsreading==1 && $h && ref($h) && scalar keys %{$h} > 0 ) {
       foreach (@readings) {
-        next if (ref($Astro{$_}));
-        $ret .= "\n" if ($ret ne "");
+        next if (!defined($Astro{$_}) || ref($Astro{$_}));
+        $ret .= $html && $html eq "1" ? "<br/>\n" : "\n"
+          if ( $ret ne "" );
         $ret .= encode_utf8(FormatReading( $_, $h, $lc_numeric )) unless($_ =~ /^\./);
         $ret .= encode_utf8($Astro{$_}) if ($_ =~ /^\./);
       }
@@ -2663,8 +2671,9 @@ sub Get($@) {
     }
     elsif ( $wantsreading==1 ) {
       foreach (@readings) {
-        next if (ref($Astro{$_}));
-        $ret .= "\n" if ($ret ne "");
+        next if (!defined($Astro{$_}) || ref($Astro{$_}));
+        $ret .= $html && $html eq "1" ? "<br/>\n" : "\n"
+          if ( $ret ne "" );
         $ret .= encode_utf8($Astro{$_});
       }
       $ret = "<html>" . $ret . "</html>" if (defined($html) && $html ne "0");
@@ -2741,14 +2750,12 @@ sub Get($@) {
         . $Astro{MoonPhaseS} . ", "
         . FormatReading( "MoonSign", $h );
 
-      $ret = "<html>" . $ret . "</html>"
-        if ($html && $html eq "1");
-    }
-
-    if ($html && $html eq "1") {
-      $ret =~ s/   /&nbsp;&nbsp;&nbsp;/g;
-      $ret =~ s/  /&nbsp;&nbsp;/g;
-      $ret =~ s/\n/<br\/>\n/g;
+        if ($html && $html eq "1") {
+          $ret = "<html>" . $ret . "</html>";
+          $ret =~ s/   /&nbsp;&nbsp;&nbsp;/g;
+          $ret =~ s/  /&nbsp;&nbsp;/g;
+          $ret =~ s/\n/<br\/>\n/g;
+        }
     }
 
     return $ret;
