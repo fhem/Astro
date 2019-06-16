@@ -2296,7 +2296,7 @@ sub Update($@) {
 
   readingsBeginUpdate($hash);
   foreach my $key (keys %Astro){
-    readingsBulkUpdateIfChanged($hash,$key,$Astro{$key});
+    readingsBulkUpdateIfChanged($hash,$key,encode_utf8($Astro{$key}));
   }
   readingsEndUpdate($hash,1); 
   readingsSingleUpdate($hash,"state","Updated",1);
