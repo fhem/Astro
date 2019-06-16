@@ -2684,13 +2684,13 @@ sub Get($@) {
       $ret = FormatReading( "ObsDate", $h, $lc_numeric ) . " " . $Astro{ObsTime};
       $ret .= (
         ( $Astro{ObsIsDST} == 1 )
-        ? " (" . FormatReading( "ObsIsDST", $h ) . ")\n"
-        : "\n"
+        ? " (" . FormatReading( "ObsIsDST", $h ) . ")"
+        : ""
       );
+      $ret .= ", " . FormatReading( "ObsTimezone", $h ) . "\n";
       $ret .= FormatReading( "ObsJD", $h, $lc_numeric ) . ", "
         . FormatReading( "ObsDayofyear", $h, $lc_numeric ) . "\n";
-      $ret .= FormatReading( "ObsSeason", $h ) . ", "
-        . FormatReading( "ObsTimezone", $h ) . "\n";
+      $ret .= FormatReading( "ObsSeason", $h ) . "\n";
       $ret .=
           $tt->{"coord"} . ":  "
         . FormatReading( "ObsLon", $h, $lc_numeric ) . ", "
