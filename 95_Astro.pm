@@ -52,7 +52,7 @@ my $deltaT   = 65;  # Correction time in s
 my %Astro;
 my %Date;
 
-our $VERSION = 1.6;
+our $VERSION = "v2.0.0";
 
 #-- These we may set on request
 my %sets = (
@@ -1980,29 +1980,21 @@ sub Compute($;$){
   my ($x,$y,$z,$radius) = Observer2EquCart($lon, $lat, $height, $gmst); 
  
   #-- calculate data for the sun at given time
-  my $sunCoor   = SunPosition($TDT, $lat, $lmst*15.*$DEG);   
-  $Astro{".SunLon"}      = $sunCoor->{lon}*$RAD;
-  #$Astro{"SunLat"}       = $sunCoor->{lat}*$RAD;
-  $Astro{".SunRa"}       = $sunCoor->{ra} *$RAD/15;
-  $Astro{".SunDec"}      = $sunCoor->{dec}*$RAD;
-  $Astro{".SunAz"}       = $sunCoor->{az} *$RAD;
-  $Astro{".SunAlt"}      = $sunCoor->{alt}*$RAD + Refraction($sunCoor->{alt});  # including refraction WARNUNG => *RAD ???
-  $Astro{".SunDiameter"} = $sunCoor->{diameter}*$RAD*60; #angular diameter in arc seconds
-  $Astro{".SunDistance"} = $sunCoor->{distance};
-  $Astro{SunLon}      = _round($Astro{".SunLon"},1);
-  #$Astro{SunLat}      = $sunCoor->{lat}*$RAD;
-  $Astro{SunRa}       = HHMM($Astro{".SunRa"});
-  $Astro{SunDec}      = _round($Astro{".SunDec"},1);
-  $Astro{SunAz}       = _round($Astro{".SunAz"},1);
-  $Astro{SunAlt}      = _round($Astro{".SunAlt"},1);
-  $Astro{SunSign}     = $tt->{$sunCoor->{sig}};
-  $Astro{SunDiameter} = _round($Astro{".SunDiameter"},1);
-  $Astro{SunDistance} = _round($Astro{".SunDistance"},0);
+  my $sunCoor     = SunPosition($TDT, $lat, $lmst*15.*$DEG);   
+  $Astro{SunLon}  = _round($sunCoor->{lon}*$RAD,1);
+  #$Astro{SunLat}  = $sunCoor->{lat}*$RAD;
+  $Astro{".SunRa"}= _round($sunCoor->{ra} *$RAD/15,1);
+  $Astro{SunRa}   = HHMM($Astro{".SunRa"});
+  $Astro{SunDec}  = _round($sunCoor->{dec}*$RAD,1);
+  $Astro{SunAz}   = _round($sunCoor->{az} *$RAD,1);
+  $Astro{SunAlt}  = _round($sunCoor->{alt}*$RAD + Refraction($sunCoor->{alt}),1);  # including refraction WARNUNG => *RAD ???
+  $Astro{SunSign} = $tt->{$sunCoor->{sig}};
+  $Astro{SunDiameter}=_round($sunCoor->{diameter}*$RAD*60,1); #angular diameter in arc seconds
+  $Astro{SunDistance}=_round($sunCoor->{distance},0);
   
   #-- calculate distance from the observer (on the surface of earth) to the center of the sun
   my ($xs,$ys,$zs) = EquPolar2Cart($sunCoor->{ra}, $sunCoor->{dec}, $sunCoor->{distance});
-  $Astro{".SunDistanceObserver"} = sqrt( ($xs-$x)**2 + ($ys-$y)**2 + ($zs-$z)**2 );
-  $Astro{SunDistanceObserver} = _round($Astro{".SunDistanceObserver"},0);
+  $Astro{SunDistanceObserver} = _round(sqrt( ($xs-$x)**2 + ($ys-$y)**2 + ($zs-$z)**2 ),0);
   
   my ($suntransit,$sunrise,$sunset,$CivilTwilightMorning,$CivilTwilightEvening,
     $NauticTwilightMorning,$NauticTwilightEvening,$AstroTwilightMorning,$AstroTwilightEvening,$CustomTwilightMorning,$CustomTwilightEvening) = 
@@ -2066,27 +2058,18 @@ sub Compute($;$){
   
   #-- calculate data for the moon at given time
   my $moonCoor  = MoonPosition($sunCoor->{lon}, $sunCoor->{anomalyMean}, $TDT, $lon, $lat, $radius, $lmst*15.*$DEG);
-  $Astro{".MoonLon"}      = $moonCoor->{lon}*$RAD;
-  $Astro{".MoonLat"}      = $moonCoor->{lat}*$RAD;
-  $Astro{".MoonRa"}       = $moonCoor->{ra} *$RAD/15.;
-  $Astro{".MoonDec"}      = $moonCoor->{dec}*$RAD;
-  $Astro{".MoonAz"}       = $moonCoor->{az} *$RAD;
-  $Astro{".MoonAlt"}      = $moonCoor->{alt}*$RAD + Refraction($moonCoor->{alt});  # including refraction WARNUNG => *RAD ???
-  $Astro{".MoonDistance"} = $moonCoor->{distance};
-  $Astro{".MoonDiameter"} = $moonCoor->{diameter}*$RAD*60.; # angular diameter in arc seconds
-  $Astro{".MoonAge"}      = $moonCoor->{age}*$RAD;
-  $Astro{".MoonPhaseN"}   = $moonCoor->{phasen};
-  $Astro{MoonLon}      = _round($Astro{".MoonLon"},1);
-  $Astro{MoonLat}      = _round($Astro{".MoonLat"},1);
-  $Astro{MoonRa}       = HHMM($Astro{".MoonRa"});
-  $Astro{MoonDec}      = _round($Astro{".MoonDec"},1);
-  $Astro{MoonAz}       = _round($Astro{".MoonAz"},1);
-  $Astro{MoonAlt}      = _round($Astro{".MoonAlt"},1);
+  $Astro{MoonLon} = _round($moonCoor->{lon}*$RAD,1);
+  $Astro{MoonLat} = _round($moonCoor->{lat}*$RAD,1);
+  $Astro{".MoonRa"} = _round($moonCoor->{ra} *$RAD/15.,1);
+  $Astro{MoonRa}    = HHMM($Astro{".MoonRa"});
+  $Astro{MoonDec} = _round($moonCoor->{dec}*$RAD,1);
+  $Astro{MoonAz}  = _round($moonCoor->{az} *$RAD,1);
+  $Astro{MoonAlt} = _round($moonCoor->{alt}*$RAD + Refraction($moonCoor->{alt}),1);  # including refraction WARNUNG => *RAD ???
   $Astro{MoonSign}     = $tt->{$moonCoor->{sig}};
-  $Astro{MoonDistance} = _round($Astro{".MoonDistance"},0);
-  $Astro{MoonDiameter} = _round($Astro{".MoonDiameter"},1);
-  $Astro{MoonAge}      = _round($Astro{".MoonAge"},1);
-  $Astro{MoonPhaseN}   = _round($Astro{".MoonPhaseN"},2);
+  $Astro{MoonDistance} = _round($moonCoor->{distance},0);
+  $Astro{MoonDiameter} = _round($moonCoor->{diameter}*$RAD*60.,1); # angular diameter in arc seconds
+  $Astro{MoonAge}      = _round($moonCoor->{age}*$RAD,1);
+  $Astro{MoonPhaseN}   = _round($moonCoor->{phasen},2);
   $Astro{MoonPhaseI}   = $moonCoor->{phasei};
   $Astro{MoonPhaseS}   = $tt->{$moonCoor->{phases}};
   
@@ -2936,10 +2919,14 @@ sub Get($@) {
 =for :application/json;q=META.json 95_Astro.pm
 {
   "author": [
-    "Prof. Dr. Peter A. Henning <>"
+    "Prof. Dr. Peter A. Henning <>",
+    "Julian Pawlowski <>",
+    "Marko Oldenburg <>"
   ],
   "x_fhem_maintainer": [
-    "pahenning"
+    "pahenning",
+    "loredo",
+    "CoolTux"
   ],
   "resources": {
     "x_wiki": {
