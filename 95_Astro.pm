@@ -37,6 +37,7 @@ use POSIX;
 use utf8;
 
 use Encode;
+use FHEM::Meta;
 use GPUtils qw(GP_Import);
 use Math::Trig;
 use Time::HiRes qw(gettimeofday);
@@ -51,8 +52,6 @@ my $deltaT   = 65;  # Correction time in s
 
 my %Astro;
 my %Date;
-
-our $VERSION = "v2.0.0";
 
 #-- These we may set on request
 my %sets = (
@@ -731,7 +730,7 @@ sub Initialize ($) {
   $data{FWEXT}{"/Astro_moonwidget"}{FUNC} = "FHEM::Astro::Moonwidget";
   $data{FWEXT}{"/Astro_moonwidget"}{FORKABLE} = 0;		
 	
-  return undef;
+  return FHEM::Meta::InitMod( __FILE__, $hash );
 }
 
 ########################################################################################################
@@ -747,7 +746,10 @@ sub Define ($@) {
  my $name = shift @$a;
  my $type = shift @$a;
 
- $hash->{VERSION} = $VERSION;
+ return $@ unless ( FHEM::Meta::SetInternals($hash) );
+ use version 0.77; our $VERSION = FHEM::Meta::Get( $hash, 'version' );
+
+ # $hash->{VERSION} = $VERSION;
  $hash->{NOTIFYDEV} = "global";
  $hash->{INTERVAL} = 3600;
  readingsSingleUpdate( $hash, "state", "Initialized", $init_done ); 
@@ -1810,7 +1812,7 @@ sub MoonRise($$$$$$$){
 
 ########################################################################################################
 #
-# SetTime - update of the %Date hash for today +/- 2 days
+# SetTime - update of the %Date hash for today
 # 
 ########################################################################################################
 
@@ -1858,7 +1860,7 @@ sub SetTime (;$$$) {
     $Date{date} = strftime( "%x", localtime($time) );
     $Date{tz} = strftime( "%Z", localtime($time) );
 
-    delete $Date{tz} if (!$Date{tz} || $Date{tz} eq "" || $Date{tz} eq " ");
+    delete $Date{tz} if (!$Date{tz} || $Date{tz} !~ /^\d+$/);
 
     delete local $ENV{TZ};
     tzset();
@@ -2605,7 +2607,7 @@ sub Get($@) {
   delete $FW_webArgs{addLinks};
 
   if( $a->[0] eq "version") {
-    return $VERSION;
+    return version->parse(FHEM::Astro::->VERSION())->normal;
     
   }elsif( $a->[0] eq "json") {
     Compute($hash, $h);
@@ -2918,6 +2920,7 @@ sub Get($@) {
 =end html_DE
 =for :application/json;q=META.json 95_Astro.pm
 {
+  "version": "v2.0.0",
   "author": [
     "Prof. Dr. Peter A. Henning <>",
     "Julian Pawlowski <>",
