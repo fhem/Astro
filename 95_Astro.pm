@@ -9,7 +9,7 @@
 # Program skeleton (with some errors) by Arnold Barmettler 
 # http://lexikon.astronomie.info/java/sunmoon/
 #
-#  $Id: 95_Astro.pm 19405 2019-05-19 08:50:54Z phenning $
+#  $Id: 95_Astro.pm 19645 2019-06-19 10:21:35Z loredo $
 #
 ########################################################################################
 #
@@ -759,8 +759,7 @@ sub Define ($@) {
  # for the very first definition, set some default attributes
  if ( $init_done && !defined( $hash->{OLDDEF} ) ) {
    $attr{$name}{icon}        = 'telescope';
-   $attr{$name}{recomputeAt} = 'NewDay,SunRise,SunSet,AstroTwilightEvening,AstroTwilightMorning,CivilTwilightEvening,CivilTwilightMorning,CustomTwilightEvening,CustomTwilightMorning
-';
+   $attr{$name}{recomputeAt} = 'NewDay,SunRise,SunSet,AstroTwilightEvening,AstroTwilightMorning,CivilTwilightEvening,CivilTwilightMorning,CustomTwilightEvening,CustomTwilightMorning';
  }
 
  return undef;
