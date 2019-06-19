@@ -1860,7 +1860,7 @@ sub SetTime (;$$$) {
     $Date{date} = strftime( "%x", localtime($time) );
     $Date{tz} = strftime( "%Z", localtime($time) );
 
-    delete $Date{tz} if (!$Date{tz} || $Date{tz} !~ /^\d+$/);
+    delete $Date{tz} if (!$Date{tz} || $Date{tz} eq "" || $Date{tz} eq " ");
 
     delete local $ENV{TZ};
     tzset();
