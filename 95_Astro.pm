@@ -639,13 +639,9 @@ our @zodiac = ("aries","taurus","gemini","cancer","leo","virgo",
 our @phases = ("newmoon","waxingcrescent", "firstquarter", "waxingmoon", 
     "fullmoon", "waningmoon", "lastquarter", "waningcrescent");
 
-our @seasons = ( "winter", "spring", "summer", "fall" );
-
-our %seasonn = (
-    "spring" => [ 80,  172 ],    #21./22.3. - 20.6.
-    "summer" => [ 173, 265 ],    #21.06. bis 21./22.09.
-    "fall"   => [ 266, 353 ],    #22./23.09. bis 20./21.12.
-    "winter" => [ 354, 79 ]
+our %seasons = (
+    N => [ "winter", "spring", "summer", "fall" ],
+    S => [ "summer", "fall", "winter", "spring" ]
 );
 
 #-- Run before package compilation
@@ -1813,6 +1809,29 @@ sub MoonRise($$$$$$$){
 
 ########################################################################################################
 #
+# Season - Find astronomical season
+# 
+########################################################################################################
+
+sub Season($$;$) {
+    my ( $JD0, $deltaT, $lat ) = @_;
+
+    # season starts during the day so we need to
+    #  look for tomorrows quarter at midnight
+    my $sunCoor = SunPosition( $JD0 + 1. + $deltaT / 86400.0, undef, undef );
+    my $quarter = ceil( rad2deg( $sunCoor->{lon} ) / 90. ) % 4;
+
+    # # let counter begin with winter
+    # $quarter = $quarter == 3. ? 0. : $quarter + 1.;
+
+    return
+      wantarray
+      ? ( $quarter, $seasons{ $lat && $lat < 0 ? 'S' : 'N' }[$quarter] )
+      : $quarter;
+}
+
+########################################################################################################
+#
 # SetTime - update of the %Date hash for today
 # 
 ########################################################################################################
@@ -2151,17 +2170,9 @@ sub Compute($;$){
   $Astro{".wday"}      = $Date{wday};
 
   #-- check astro season
-  my $doj = $Astro{ObsDayofyear};
-
-  for( my $i=0;$i<4;$i++){
-    my $key = $seasons[$i];
-    if(   (($seasonn{$key}[0] < $seasonn{$key}[1]) &&  ($seasonn{$key}[0] <= $doj) && ($seasonn{$key}[1] >= $doj))
-       || (($seasonn{$key}[0] > $seasonn{$key}[1]) && (($seasonn{$key}[0] <= $doj) || ($seasonn{$key}[1] >= $doj))) ){
-       $Astro{ObsSeason}  = $tt->{$key};
-       $Astro{ObsSeasonN} = $i; 
-       last;
-    }  
-  }
+  my ($seasonn, $season) = Season($JD0, $deltaT, $Astro{ObsLat});
+  $Astro{ObsSeason}  = $tt->{$season};
+  $Astro{ObsSeasonN} = $seasonn;
 
   delete local $ENV{TZ};
   tzset();
