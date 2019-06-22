@@ -681,7 +681,7 @@ BEGIN {
           )
     );
 
-    #-- Export to main context with different name
+    # Export to main context
     GP_Export(
         qw(
           Get
@@ -745,7 +745,6 @@ sub Define ($@) {
  return $@ unless ( FHEM::Meta::SetInternals($hash) );
  use version 0.77; our $VERSION = FHEM::Meta::Get( $hash, 'version' );
 
- # $hash->{VERSION} = $VERSION;
  $hash->{NOTIFYDEV} = "global";
  $hash->{INTERVAL} = 3600;
  readingsSingleUpdate( $hash, "state", "Initialized", $init_done ); 
@@ -2473,7 +2472,7 @@ sub FormatReading($$;$) {
     }
   }
 
-  return $ret;
+  return encode_utf8($ret);
 }
 
 ########################################################################################################
@@ -2660,7 +2659,7 @@ sub Get($@) {
         next if (!defined($Astro{$_}) || ref($Astro{$_}));
         $ret .= $html && $html eq "1" ? "<br/>\n" : "\n"
           if ( $ret ne "" );
-        $ret .= encode_utf8(FormatReading( $_, $h, $lc_numeric )) unless($_ =~ /^\./);
+        $ret .= FormatReading( $_, $h, $lc_numeric ) unless($_ =~ /^\./);
         $ret .= encode_utf8($Astro{$_}) if ($_ =~ /^\./);
       }
       $ret = "<html>" . $ret . "</html>" if (defined($html) && $html ne "0");
