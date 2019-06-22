@@ -684,15 +684,15 @@ BEGIN {
           toJSON
           )
     );
-}
 
-#-- Export to main context with different name
-GP_Export(
-    qw(
-      Get
-      Initialize
-      )
-);
+    #-- Export to main context with different name
+    GP_Export(
+        qw(
+          Get
+          Initialize
+          )
+    );
+}
 
 _LoadOptionalPackages();
 
@@ -2802,7 +2802,7 @@ sub Get($@) {
         </li>
         <li>
         It is not necessary to define an Astro device to use the data provided by this module.<br/>
-        To use its data in any other module, you just need to put <code>require "95_Astro.pm";</code> <br/>
+        To use its data in any other module, you just need to put <code>LoadModule("Astro");</code> <br/>
         at the start of your own code, and then may call, for example, the function<br/> 
         <ul><code>Astro_Get( SOME_HASH_REFERENCE,"dummy","text", "SunRise","2019-12-24");</code></ul>
         to acquire the sunrise on Christmas Eve 2019. The hash reference may also be undefined or an existing device name of any type. Note that device attributes of the respective device will be respected as long as their name matches those mentioned for an Astro device.
