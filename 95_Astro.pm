@@ -1171,7 +1171,7 @@ sub Ecl2Equ($$$){
 
 ########################################################################################################
 #
-# Equ2Altaz - Transform equatorial coordinates (RA/Dec) to horizonal coordinates 
+# Equ2Altaz - Transform equatorial coordinates (RA/Dec) to horizontal coordinates 
 #                   (azimuth/altitude). Refraction is ignored
 #
 ########################################################################################################
@@ -1309,11 +1309,11 @@ sub SunPosition($$$){
   my $distance  = (1-$e*$e)/(1+$e*cos($nu));   # distance in astronomical units
   $sunCoor{diameter} = $diameter0/$distance;        # angular diameter
   $sunCoor{distance} = $distance*$a;                # distance in km
-  $sunCoor{parallax} = 6378.137/$sunCoor{distance};          # horizonal parallax
+  $sunCoor{parallax} = 6378.137/$sunCoor{distance};          # horizontal parallax
 
   ($sunCoor{ra},$sunCoor{dec}) = Ecl2Equ($sunCoor{lon}, $sunCoor{lat}, $TDT);
   
-  #-- calculate horizonal coordinates of sun, if geographic positions is given
+  #-- calculate horizontal coordinates of sun, if geographic positions is given
   if (defined($observerlat) && defined($lmst) ) {
     ($sunCoor{az},$sunCoor{alt}) = Equ2Altaz($sunCoor{ra}, $sunCoor{dec}, $TDT, $observerlat, $lmst);
   }
@@ -1372,7 +1372,7 @@ sub MoonPosition($$$$$$$){
   $moonCoor{parallax} = $parallax0/$distance; # horizontal parallax in radians
   $moonCoor{distance} = $distance*$a;         # distance in km
 
-  #-- Calculate horizonal coordinates of moon, if geographic positions is given
+  #-- Calculate horizontal coordinates of moon, if geographic positions is given
 
   #-- backup geocentric coordinates
   $moonCoor{raGeocentric}       = $moonCoor{ra}; 
