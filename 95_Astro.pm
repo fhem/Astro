@@ -1332,7 +1332,8 @@ sub SunPosition($$$){
   if (defined($observerlat) && defined($lmst) ) {
     ($sunCoor{az},$sunCoor{alt}) = Equ2Altaz($sunCoor{ra}, $sunCoor{dec}, $TDT, $observerlat, $lmst);
   }
-  $sunCoor{sig} = $zodiac[floor($sunCoor{lon}*$RAD/30)];
+  $sunCoor{sign}    = floor($sunCoor{lon}*$RAD/30.);
+  $sunCoor{sig}     = $zodiac[$sunCoor{sign}];
   
   return ( \%sunCoor );
 }
@@ -1418,7 +1419,8 @@ sub MoonPosition($$$$$$$){
   $p = $p % 8;
   $moonCoor{phases} = $phases[$p]; 
   $moonCoor{phasei} = $p;
-  $moonCoor{sig}    = $zodiac[floor($moonCoor{lon}*$RAD/30)];
+  $moonCoor{sign}   = floor($moonCoor{lon}*$RAD/30);
+  $moonCoor{sig}    = $zodiac[$moonCoor{sign}];
 
   return ( \%moonCoor );
 }
@@ -1990,6 +1992,7 @@ sub Compute($;$){
   $Astro{SunAz}   = _round($sunCoor->{az} *$RAD,1);
   $Astro{SunAlt}  = _round($sunCoor->{alt}*$RAD + Refraction($sunCoor->{alt}),1);  # including refraction WARNUNG => *RAD ???
   $Astro{SunSign} = $tt->{$sunCoor->{sig}};
+  $Astro{SunSignN}= $sunCoor->{sign};
   $Astro{SunDiameter}=_round($sunCoor->{diameter}*$RAD*60,1); #angular diameter in arc seconds
   $Astro{SunDistance}=_round($sunCoor->{distance},0);
   
@@ -2067,6 +2070,7 @@ sub Compute($;$){
   $Astro{MoonAz}  = _round($moonCoor->{az} *$RAD,1);
   $Astro{MoonAlt} = _round($moonCoor->{alt}*$RAD + Refraction($moonCoor->{alt}),1);  # including refraction WARNUNG => *RAD ???
   $Astro{MoonSign}     = $tt->{$moonCoor->{sig}};
+  $Astro{MoonSignN}    = $moonCoor->{sign};
   $Astro{MoonDistance} = _round($moonCoor->{distance},0);
   $Astro{MoonDiameter} = _round($moonCoor->{diameter}*$RAD*60.,1); # angular diameter in arc seconds
   $Astro{MoonAge}      = _round($moonCoor->{age}*$RAD,1);
@@ -2779,7 +2783,7 @@ sub Get($@) {
         <li><i>Diameter</i> = virtual diameter (in arc minutes) of body</li>
         <li><i>Distance,DistanceObserver</i> = distance (in km) of body to center of earth or to observer</li>
         <li><i>PhaseN,PhaseS</i> = Numerical and string value for phase of body</li>
-	    <li><i>Sign</i> = Circadian sign for body along its track</li>
+	    <li><i>Sign,SignN</i> = Circadian sign for body along its track</li>
 	    <li><i>Rise,Transit,Set</i> = times (in HH:MM) for rise and set as well as for highest position of body</li>
         </ul>
         <p>
