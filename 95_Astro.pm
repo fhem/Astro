@@ -1821,9 +1821,6 @@ sub Season($$;$) {
     my $sunCoor = SunPosition( $JD0 + 1. + $deltaT / 86400.0, undef, undef );
     my $quarter = ceil( rad2deg( $sunCoor->{lon} ) / 90. ) % 4;
 
-    # # let counter begin with winter
-    # $quarter = $quarter == 3. ? 0. : $quarter + 1.;
-
     return
       wantarray
       ? ( $quarter, $seasons{ $lat && $lat < 0 ? 'S' : 'N' }[$quarter] )
