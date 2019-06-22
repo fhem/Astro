@@ -1089,20 +1089,35 @@ sub HHMMSS($){
 
 ########################################################################################################
 #
-# CalcJD - Calculate Julian date: valid only from 1.3.1901 to 28.2.2100
+# Date2JD - Calculate Julian date, adopted from Perl CPAN module Astro::Coord::ECI::Utils
 #
 ########################################################################################################
 
-sub CalcJD($$$) {
-  my ($day,$month,$year) = @_;
-  my $jd = 2415020.5-64; # 1.1.1900 - correction of algorithm
-  if ($month<=2) { 
-    $year--; 
-    $month += 12; 
-  }
-  $jd += int( ($year-1900)*365.25 );
-  $jd += int( 30.6001*(1+$month) );
-  return($jd + $day);
+sub Date2JD {
+    my @args = @_;
+    unshift @args, 0 while @args < 6.;
+    my ( $sec, $min, $hr, $day, $mon, $yr ) = @args;
+    return undef if ( ( $yr < -4712. ) or ( $mon < 1. || $mon > 12. ) );
+    if ( $mon < 3. ) {
+        --$yr;
+        $mon += 12.;
+    }
+
+    my $JD_GREGORIAN = 2299160.5;
+    my $A            = floor( $yr / 100 );
+    my $B            = 2 - $A + floor( $A / 4 );
+    my $jd =
+      floor( 365.25 *  ( $yr + 4716 ) ) +
+      floor( 30.6001 * ( $mon + 1 ) ) +
+      $day + $B - 1524.5 +
+      ( ( ( $sec || 0 ) / 60 + ( $min || 0 ) ) / 60 + ( $hr || 0 ) ) / 24;
+    $jd < $JD_GREGORIAN
+      and $jd =
+      floor( 365.25 *  ( $yr + 4716 ) ) +
+      floor( 30.6001 * ( $mon + 1 ) ) +
+      $day - 1524.5 +
+      ( ( ( $sec || 0 ) / 60 + ( $min || 0 ) ) / 60 + ( $hr || 0 ) ) / 24;
+    return $jd;
 }
 
 ########################################################################################################
@@ -1948,7 +1963,7 @@ sub Compute($;$){
   #  return;
   #}
 
-  my $JD0 = CalcJD( $Date{day}, $Date{month}, $Date{year} );
+  my $JD0 = Date2JD( $Date{day}, $Date{month}, $Date{year} );
   my $JD  = $JD0 + ( $Date{hour} - $Date{zonedelta} + $Date{min}/60. + $Date{sec}/3600.)/24;
   my $TDT = $JD  + $deltaT/86400.0; 
   
