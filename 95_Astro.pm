@@ -1816,7 +1816,7 @@ sub Season($$;$) {
     my ( $JD0, $deltaT, $lat ) = @_;
 
     # season starts during the day so we need to
-    #  look for tomorrows quarter at midnight
+    #  look for tomorrows quarter at noon
     my $sunCoor = SunPosition( $JD0 + 1. + $deltaT / 86400.0, undef, undef );
     my $quarter = ceil( rad2deg( $sunCoor->{lon} ) / 90. ) % 4;
 
