@@ -41,7 +41,7 @@ use FHEM::Meta;
 use GPUtils qw(GP_Import GP_Export);
 use Math::Trig;
 use Time::HiRes qw(gettimeofday);
-use Time::Local qw(timelocal_modern timelocal_nocheck);
+use Time::Local qw(timelocal_modern);
 use UConv;
 #use Data::Dumper;
 
