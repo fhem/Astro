@@ -2560,6 +2560,7 @@ sub Get($@) {
 
   my $wantsreading = 0;
   my $dayOffset = 0;
+  my $now = gettimeofday();
   my $html = defined( $hash->{CL} ) && $hash->{CL}{TYPE} eq "FHEMWEB" ? 1 : undef;
   my $tz = AttrVal( $name, "timezone", AttrVal( "global", "timezone", undef ) );
   my $lang = AttrVal( $name, "language", AttrVal( "global", "language", undef ) );
@@ -2620,20 +2621,30 @@ sub Get($@) {
 
   if( int(@$a) > (1+$wantsreading) ) {
     my $str = (int(@$a) == (3+$wantsreading)) ? $a->[1+$wantsreading]." ".$a->[2+$wantsreading] : $a->[1+$wantsreading];
-    if( $str =~ /^(\d{2}):(\d{2})(?::(\d{2}))?|(?:(\d{4})-(\d{2})-(\d{2}))(?:\D+(\d{2}):(\d{2})(?::(\d{2}))?)?$/){
+    if( $str =~ /^(\d{2}):(\d{2})(?::(\d{2}))?$|^(?:(?:(\d{4})-)?(\d{2})-(\d{2}))(?:\D+(\d{2}):(\d{2})(?::(\d{2}))?)?$/){
+      return "[FHEM::Astro::Get] hours can only be between 00 and 23" if (defined($1) && $1 > 23.);
+      return "[FHEM::Astro::Get] minutes can only be between 00 and 59" if (defined($2) && $2 > 59.);
+      return "[FHEM::Astro::Get] seconds can only be between 00 and 59" if (defined($3) && $3 > 59.);
+      return "[FHEM::Astro::Get] month can only be between 01 and 12" if (defined($5) && ($5 > 12. || $5 < 1.));
+      return "[FHEM::Astro::Get] day can only be between 01 and 31" if (defined($6) && ($6 > 31. || $6 < 1.));
+      return "[FHEM::Astro::Get] hours can only be between 00 and 23" if (defined($7) && $7 > 23.);
+      return "[FHEM::Astro::Get] minutes can only be between 00 and 59" if (defined($8) && $8 > 59.);
+      return "[FHEM::Astro::Get] seconds can only be between 00 and 59" if (defined($9) && $9 > 59.);
+
       SetTime(
           timelocal(
               defined($3) ? $3 : (defined($9) ? $9 : 0),
               defined($2) ? $2 : (defined($8) ? $8 : 0),
               defined($1) ? $1 : (defined($7) ? $7 : 12),
-              (defined($4)? ($6,$5-1,$4) : (localtime(gettimeofday()))[3,4,5])
+              (defined($5)? ($6,$5-1.) : (localtime($now))[3,4]),
+              (defined($4)? $4 : (localtime($now))[5]),
           ) + ( $dayOffset * 86400. ), $tz, $lc_time
         )
     }else{
-      return "[FHEM::Astro::Get] $name has improper time specification $str, use YYYY-MM-DD [HH:MM:SS] [-1|yesterday|+1|tomorrow]";
+      return "[FHEM::Astro::Get] $name has improper time specification $str, use [YYYY-]MM-DD [HH:MM[:SS]] [-1|yesterday|+1|tomorrow]";
     }
   }else{
-    SetTime(gettimeofday() + ($dayOffset * 86400.), $tz, $lc_time);
+    SetTime($now + ($dayOffset * 86400.), $tz, $lc_time);
   }
 
   #-- disable automatic links to FHEM devices
@@ -2875,6 +2886,7 @@ sub Get($@) {
         <ul>
             <li><a name="Astro_json"></a>
                 <code>get &lt;name&gt; json [&lt;reading&gt;,[&lt;reading&gt;]] [-1|yesterday|+1|tomorrow]</code><br/>
+                <code>get &lt;name&gt; json [&lt;reading&gt;,[&lt;reading&gt;]] MM-DD [-1|yesterday|+1|tomorrow]</code><br/>
                 <code>get &lt;name&gt; json [&lt;reading&gt;,[&lt;reading&gt;]] YYYY-MM-DD [-1|yesterday|+1|tomorrow]</code><br/>
                 <code>get &lt;name&gt; json [&lt;reading&gt;,[&lt;reading&gt;]] HH:MM[:SS] [-1|yesterday|+1|tomorrow]</code><br/>
                 <code>get &lt;name&gt; json [&lt;reading&gt;,[&lt;reading&gt;]] YYYY-MM-DD HH:MM[:SS] [-1|yesterday|+1|tomorrow]</code>
@@ -2882,6 +2894,7 @@ sub Get($@) {
                 Formatted values as described below may be generated in a subtree <code>text</code> by adding <code>text=1</code> to the request.</li>
             <li><a name="Astro_text"></a>
                 <code>get &lt;name&gt; text [&lt;reading&gt;,[&lt;reading&gt;]] [-1|yesterday|+1|tomorrow]</code><br/>
+                <code>get &lt;name&gt; text [&lt;reading&gt;,[&lt;reading&gt;]] MM-DD [-1|yesterday|+1|tomorrow]</code><br/>
                 <code>get &lt;name&gt; text [&lt;reading&gt;,[&lt;reading&gt;]] YYYY-MM-DD [-1|yesterday|+1|tomorrow]</code><br/>
                 <code>get &lt;name&gt; text [&lt;reading&gt;,[&lt;reading&gt;]] HH:MM[:SS] [-1|yesterday|+1|tomorrow]</code><br/>
                 <code>get &lt;name&gt; text [&lt;reading&gt;,[&lt;reading&gt;]] YYYY-MM-DD HH:MM[:SS] [-1|yesterday|+1|tomorrow]</code>
