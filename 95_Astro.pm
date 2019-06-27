@@ -41,7 +41,7 @@ use FHEM::Meta;
 use GPUtils qw(GP_Import GP_Export);
 use Math::Trig;
 use Time::HiRes qw(gettimeofday);
-use Time::Local;
+use Time::Local qw(timelocal_modern timelocal_nocheck);
 use UConv;
 #use Data::Dumper;
 
@@ -2292,13 +2292,13 @@ sub Update($@) {
   {
     if ( $comp eq 'NewDay' ) {
         push @next,
-          timelocal( 0, 0, 0, ( localtime( $now + 86400. ) )[ 3, 4, 5 ] );
+          timelocal_modern( 0, 0, 0, (localtime($now + 86400.))[3,4], (localtime($now + 86400.))[5]+1900. );
         next;
     }
     my $k = ".$comp";
     next unless ( defined( $Astro{$k} ) && $Astro{$k} =~ /^\d+(?:\.\d+)?$/ );
     my $t =
-      timelocal( 0, 0, 0, ( localtime($now) )[ 3, 4, 5 ] ) + $Astro{$k} * 3600.;
+      timelocal_modern( 0, 0, 0, (localtime($now))[3,4], (localtime($now))[5]+1900. ) + $Astro{$k} * 3600.;
     $t += 86400. if ( $t < $now );    # that is for tomorrow
     push @next, $t;
   }
@@ -2632,12 +2632,12 @@ sub Get($@) {
       return "[FHEM::Astro::Get] seconds can only be between 00 and 59" if (defined($9) && $9 > 59.);
 
       SetTime(
-          timelocal(
+          timelocal_modern(
               defined($3) ? $3 : (defined($9) ? $9 : 0),
               defined($2) ? $2 : (defined($8) ? $8 : 0),
               defined($1) ? $1 : (defined($7) ? $7 : 12),
               (defined($5)? ($6,$5-1.) : (localtime($now))[3,4]),
-              (defined($4)? $4 : (localtime($now))[5]),
+              (defined($4)? $4 : (localtime($now))[5]+1900.),
           ) + ( $dayOffset * 86400. ), $tz, $lc_time
         )
     }else{
