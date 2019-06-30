@@ -1921,7 +1921,8 @@ sub Compute($;$){
   if( defined($params->{"language"}) &&
       exists($transtable{uc($params->{"language"})})
   ){
-    $tt = $transtable{uc($params->{"language"})};
+    $lang = uc($params->{"language"});
+    $tt = $transtable{$lang};
   }elsif( exists($transtable{uc($lang)}) ){
     $tt = $transtable{uc($lang)};
   }else{
