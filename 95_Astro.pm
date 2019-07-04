@@ -1154,8 +1154,7 @@ sub SUNRISE_EL($$$$$$$$$) {
   my @lt = localtime($nt);
   my $gmtoff = main::_calctz($nt,@lt); # in hour
 
-  my ($rt,$st) = _SUNRISE_EL($lat,$long,$altit,$needrise,$needset,
-                        $lt[5]+1900,$lt[4]+1,$lt[3],$lt[2],$lt[1],$lt[0], $gmtoff);
+  my ($rt,$st) = _SUNRISE_EL($lat,$long,$altit,$needrise,$needset,$nt,$gmtoff);
   my $sst = ($rise ? $rt : $st) + ($seconds/3600);
 
   my $nh = $lt[2] + $lt[1]/60 + $lt[0]/3600;    # Current hour since midnight
@@ -1185,8 +1184,7 @@ sub SUNRISE_EL($$$$$$$$$) {
     my $ngmtoff = main::_calctz($nt,@lt); # in hour
     $diff = 24;
 
-    ($rt,$st) = _SUNRISE_EL($lat,$long,$altit,$needrise,$needset,
-                        $lt[5]+1900,$lt[4]+1,$lt[3],$lt[2],$lt[1],$lt[0], $ngmtoff);
+    ($rt,$st) = _SUNRISE_EL($lat,$long,$altit,$needrise,$needset,$nt,$ngmtoff);
     $sst = ($rise ? $rt : $st) + ($seconds/3600);
 
     $sst = main::hms2h($min) if(defined($min) && (main::hms2h($min) > $sst));
@@ -1200,29 +1198,41 @@ sub SUNRISE_EL($$$$$$$$$) {
 }
 
 sub _SUNRISE_EL($$$$$$$) {
-    my ( $lat, $long, $altit, $needrise, $needset, $y, $m, $dy, $hr, $min, $sec, $offset ) = @_;
+    my ( $lat, $long, $altit, $needrise, $needset, $nt, $offset ) = @_;
     my $hash = $modules{Astro}{global};
     my $name = $hash->{NAME};
 
-    my ($sr, $ss) = split( /\n/, Get(
-        $hash,
-        [
-            "Astro",
-            "text",
-            ".CustomTwilightMorning,.CustomTwilightEvening",
-            sprintf( "%04d-%02d-%02d", $y, $m, $dy ),
-            sprintf( "%02d:%02d:%02d", $hr, $min, $sec )
-        ],
-        {
-            latitude   => $lat,
-            longitude  => $long,
-            horizon    => $altit,
-            timezone   => 'GMT',
-        }
-    ));
+    my $horM = 0.0;
+    my $horE = 0.0;
+    if ( $altit =~ m/^([^:]+)(?::(.+))?$/ ) {
+        $horM = $1;
+        $horE = defined($2) ? $2 : $1;
+    }
 
-    return ($needrise ? $sr + $offset : undef), ($needset ? $ss + $offset : undef);
+    my $tz =
+      AttrVal( $name, "timezone", AttrVal( "global", "timezone", undef ) );
+    SetTime( $nt, $tz );
+    my $JD0 = Date2JD( $Date{day}, $Date{month}, $Date{year} );
+
+    my (
+        $suntransit,            $sunrise,
+        $sunset,                $CivilTwilightMorning,
+        $CivilTwilightEvening,  $NauticTwilightMorning,
+        $NauticTwilightEvening, $AstroTwilightMorning,
+        $AstroTwilightEvening,  $CustomTwilightMorning,
+        $CustomTwilightEvening
+      )
+      = SunRise(
+        $JD0, $deltaT,
+        $long * $DEG,
+        $lat * $DEG,
+        $Date{zonedelta}, $horM, $horE, 0
+      );
+
+    return ( $needrise ? $CustomTwilightMorning : undef ),
+      ( $needset       ? $CustomTwilightEvening : undef );
 }
+
 
 ########################################################################################################
 #
