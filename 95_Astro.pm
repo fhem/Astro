@@ -741,6 +741,7 @@ sub Initialize ($) {
                          .$readingFnAttributes;
 
   $hash->{parseParams} = 1;
+  $hash->{NotifyOrderPrefix} = '45-';    # we are a data provider
 
   $data{FWEXT}{"/Astro_moonwidget"}{FUNC} = "FHEM::Astro::Moonwidget";
   $data{FWEXT}{"/Astro_moonwidget"}{FORKABLE} = 0;		
