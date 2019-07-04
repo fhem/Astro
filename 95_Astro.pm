@@ -1147,7 +1147,7 @@ sub SUNRISE_EL($$$$$$$$$) {
    my $long = AttrVal( $name, "longitude", AttrVal( "global", "longitude", 8.686 ) );
    my $lat  = AttrVal( $name, "latitude",  AttrVal( "global", "latitude",  50.112 ) );
    $altit  = AttrVal( $name, "horizon",  AttrVal( "global", "horizon",  -6. ) ) unless($hasalt);
-   Log3 undef, 5, "[FHEM::Astro::SUNRISE_EL] $name: Compute sunrise/sunset for latitude $lat , longitude $long , horizon $altit";
+   Log3 undef, 5, "[FHEM::Astro::SUNRISE_EL] $name: Compute sunrise/sunset for latitude $lat , longitude $long , horizon $altit at " . FmtDateTime($nt);
 
 
   #my $nt = time;
