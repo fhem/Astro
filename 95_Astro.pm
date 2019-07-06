@@ -774,6 +774,7 @@ sub Define ($@) {
      "[FHEM::Astro] $name is running in global scope to replace functions from SUNRISE_EL";
    $modules{$type}{global} = $hash;
    $hash->{SCOPE} = 'global';
+   $data{replacedFn}{sr_alt} = 'FHEM::' . $type . '::SUNRISE_EL';
    no strict qw/refs/;
    *{'main::sr_alt'} = *{ 'FHEM::' . $type . '::SUNRISE_EL' };
    use strict qw/refs/;
@@ -814,6 +815,7 @@ sub Undef ($$) {
       && $modules{$type}{global}{NAME} eq $name )
   {
     # restore FHEM default subroutines
+    delete $data{replacedFn}{sr_alt};
     no strict qw/refs/;
     *{'main::sr_alt'}        = *{ 'FHEM::' . $type . '::MainSUNRISE_EL' };
     use strict qw/refs/;
@@ -1234,7 +1236,6 @@ sub _SUNRISE_EL($$$$$$$) {
     return ( $needrise ? $CustomTwilightMorning : undef ),
       ( $needset       ? $CustomTwilightEvening : undef );
 }
-
 
 ########################################################################################################
 #
