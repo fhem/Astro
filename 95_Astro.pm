@@ -770,14 +770,11 @@ sub Define ($@) {
    return "$type device $modules{$type}{global}{NAME} is already defined"
      . " to act in global scope"
      if ( defined( $modules{$type}{global} ) );
-   Log3 undef, 3,
-     "[FHEM::Astro] $name is running in global scope to replace functions from SUNRISE_EL";
+   return $@
+     unless _redirectMainFn( 'sr_alt', 'FHEM::' . $type . '::SUNRISE_EL', undef,
+       $name );
    $modules{$type}{global} = $hash;
    $hash->{SCOPE} = 'global';
-   $data{replacedFn}{sr_alt} = 'FHEM::' . $type . '::SUNRISE_EL';
-   no strict qw/refs/;
-   *{'main::sr_alt'} = *{ 'FHEM::' . $type . '::SUNRISE_EL' };
-   use strict qw/refs/;
  }
 
  $hash->{NOTIFYDEV} = "global";
@@ -815,12 +812,8 @@ sub Undef ($$) {
       && $modules{$type}{global}{NAME} eq $name )
   {
     # restore FHEM default subroutines
-    delete $data{replacedFn}{sr_alt};
-    no strict qw/refs/;
-    *{'main::sr_alt'}        = *{ 'FHEM::' . $type . '::MainSUNRISE_EL' };
-    use strict qw/refs/;
-
     delete $modules{$type}{global};
+    return $@ unless _restoreMainFn('sr_alt');
   }
   
   return undef;
@@ -1104,6 +1097,137 @@ sub _LoadOptionalPackages {
       $json->shrink;
       $json->utf8;
     }
+}
+
+########################################################################################################
+#
+# subroutine to generously redirect main functions in global mode of an Astro device
+#
+########################################################################################################
+
+sub _redirectMainFn ($$;$$) {
+    return unless ( caller(0) eq __PACKAGE__ );
+    my ( $func, $fnew, $fren, $dev ) = @_;
+    my $pkg = caller(0);
+    $func = 'main::' . $func unless ( $func =~ /^main::/ );
+    $fnew = $pkg . '::'      unless ( $fnew =~ /::/ );
+    if ( !$fren && $func =~ /::([^:]+)$/ ) {
+        $fren = 'main::Main_' . $1;
+    }
+
+    no strict qw/refs/;
+    if ( !defined( *{$func} ) ) {
+        $@ =
+            "ERROR: Main subroutine $func() cannot be redirected"
+          . ' because it does not exist';
+    }
+    elsif (defined( $main::data{redirectedMainFn} )
+        && defined( $main::data{redirectedMainFn}{$func} )
+        && $main::data{redirectedMainFn}{$func} ne $fnew )
+    {
+        $@ =
+            "ERROR: Cannot redirect subroutine $func()"
+          . ' because it already links to '
+          . $main::data{redirectedMainFn}{$func} . '()';
+    }
+    elsif (defined( $main::data{renamedMainFn} )
+        && defined( $main::data{renamedMainFn}{$func} )
+        && $main::data{renamedMainFn}{$func} ne $fren )
+    {
+        $@ =
+            "ERROR: Main subroutine $func() can not be renamed to $fren()"
+          . ' because it was already renamed to subroutine '
+          . $main::data{renamedMainFn}{$func}
+          . '() by '
+          . $main::data{redirectedMainFn}{$func} . '()';
+    }
+    return 0 if ($@);
+
+    # only rename once
+    unless ( defined( $main::data{renamedMainFn} )
+        && $main::data{renamedMainFn}{$func} )
+    {
+        *{$fren} = *{$func};
+        $main::data{renamedMainFn}{$func} = $fren;
+    }
+
+    # only link once
+    unless ( defined( $main::data{redirectedMainFn} )
+        && $main::data{redirectedMainFn}{$func} )
+    {
+        *{$func} = *{$fnew};
+        $main::data{redirectedMainFn}{$func}    = $fnew;
+        $main::data{redirectedMainFnDev}{$func} = $dev
+          if ( main::IsDevice($dev) );
+
+        my $type = main::IsDevice($dev) ? main::GetType($dev) : undef;
+        if ( $type && $modules{$type}{DefFn} =~ /^(.+)::[^:]+$/ ) {
+            $type = $1;
+        }
+        main::Log3 undef, 3,
+          (
+            $type
+            ? "[$type] $dev: "
+            : 'INFO: '
+          )
+          . "Main subroutine $func() was redirected to use subroutine $fnew()"
+          . ( $pkg ne 'main' ? " by FHEM module $pkg" : '' ) . "."
+          . " Original subroutine is still available as $fnew().";
+    }
+
+    return $fren;
+}
+
+sub _restoreMainFn {
+  return unless ( caller(0) eq __PACKAGE__ );
+    my ($func) = @_;
+    $func = 'main::' . $func unless ( $func =~ /^main::/ );
+    no strict qw/refs/;
+    return 0 unless ( defined( *{$func} ) );
+    if (   defined( $main::data{renamedMainFn} )
+        && defined( $main::data{renamedMainFn}{$func} ) )
+    {
+        *{$func} = *{ $main::data{renamedMainFn}{$func} };
+
+        my $dev =
+             defined( $main::data{redirectedMainFnDev} )
+          && defined( $main::data{redirectedMainFnDev}{$func} )
+          && main::IsDevice( $main::data{redirectedMainFnDev}{$func} )
+          ? $main::data{redirectedMainFnDev}{$func}
+          : undef;
+        my $type = $dev ? main::GetType($dev) : undef;
+        if ( $type && $modules{$type}{DefFn} =~ /^(.+)::[^:]+$/ ) {
+            $type = $1;
+        }
+        main::Log3 undef, 3,
+          (
+            $type
+            ? "[$type] $dev: "
+            : 'INFO: '
+          )
+          . "Original main subroutine $func() was restored and unlinked from "
+          . $main::data{redirectedMainFn}{$func};
+
+        delete $main::data{redirectedMainFn}{$func};
+        delete $main::data{redirectedMainFnDev}{$func};
+        delete $main::data{renamedMainFn}{$func};
+        delete $main::data{redirectedMainFn}
+          unless ( defined( $main::data{redirectedMainFn} ) );
+        delete $main::data{redirectedMainFnDev}
+          unless ( defined( $main::data{redirectedMainFnDev} ) );
+        delete $main::data{renamedMainFn}
+          unless ( defined( $main::data{renamedMainFn} ) );
+    }
+    if (   defined( $main::data{redirectedMainFn} )
+        && defined( $main::data{redirectedMainFn}{$func} ) )
+    {
+        $@ = "Failed to restore main function $func()";
+        main::Log3 undef, 3, "ERROR: " . $@;
+        return 0;
+    }
+    else {
+    }
+    return $func;
 }
 
 ########################################################################################################
