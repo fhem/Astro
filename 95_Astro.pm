@@ -695,11 +695,6 @@ BEGIN {
           )
     );
 
-    # Import from main context under different names
-    no strict qw/refs/;
-    *{'FHEM::Astro::MainSUNRISE_EL'}   = *{'main::sr_alt'};
-    use strict qw/refs/;
-
     # Export to main context
     GP_Export(
         qw(
@@ -741,7 +736,6 @@ sub Initialize ($) {
                          .$readingFnAttributes;
 
   $hash->{parseParams} = 1;
-  $hash->{NotifyOrderPrefix} = '45-';    # we are a data provider
 
   $data{FWEXT}{"/Astro_moonwidget"}{FUNC} = "FHEM::Astro::Moonwidget";
   $data{FWEXT}{"/Astro_moonwidget"}{FORKABLE} = 0;		
@@ -761,21 +755,9 @@ sub Define ($@) {
  my ($hash,$a,$h) = @_;
  my $name = shift @$a;
  my $type = shift @$a;
- my $global = shift @$a;
 
  return $@ unless ( FHEM::Meta::SetInternals($hash) );
  use version 0.77; our $VERSION = FHEM::Meta::Get( $hash, 'version' );
-
- if ($global) {
-   return "$type device $modules{$type}{global}{NAME} is already defined"
-     . " to act in global scope"
-     if ( defined( $modules{$type}{global} ) );
-   return $@
-     unless _redirectMainFn( 'sr_alt', 'FHEM::' . $type . '::SUNRISE_EL', undef,
-       $name );
-   $modules{$type}{global} = $hash;
-   $hash->{SCOPE} = 'global';
- }
 
  $hash->{NOTIFYDEV} = "global";
  $hash->{INTERVAL} = 3600;
@@ -807,14 +789,6 @@ sub Undef ($$) {
   my $type = $hash->{TYPE};
   
   RemoveInternalTimer($hash);
-
-  if ( defined( $modules{$type}{global} )
-      && $modules{$type}{global}{NAME} eq $name )
-  {
-    # restore FHEM default subroutines
-    delete $modules{$type}{global};
-    return $@ unless _restoreMainFn('sr_alt');
-  }
   
   return undef;
 }
@@ -1097,268 +1071,6 @@ sub _LoadOptionalPackages {
       $json->shrink;
       $json->utf8;
     }
-}
-
-########################################################################################################
-#
-# subroutine to generously redirect main functions in global mode of an Astro device
-#
-########################################################################################################
-
-sub _redirectMainFn ($$;$$) {
-    return unless ( caller(0) eq __PACKAGE__ );
-    my ( $func, $fnew, $fren, $dev ) = @_;
-    my $pkg = caller(0);
-    $func = 'main::' . $func unless ( $func =~ /^main::/ );
-    $fnew = $pkg . '::'      unless ( $fnew =~ /::/ );
-    if ( !$fren && $func =~ /::([^:]+)$/ ) {
-        $fren = 'main::Main_' . $1;
-    }
-
-    no strict qw/refs/;
-    if ( !defined( *{$func} ) ) {
-        $@ =
-            "ERROR: Main subroutine $func() cannot be redirected"
-          . ' because it does not exist';
-    }
-    elsif (defined( $main::data{redirectedMainFn} )
-        && defined( $main::data{redirectedMainFn}{$func} )
-        && $main::data{redirectedMainFn}{$func} ne $fnew )
-    {
-        $@ =
-            "ERROR: Cannot redirect subroutine $func()"
-          . ' because it already links to '
-          . $main::data{redirectedMainFn}{$func} . '()';
-    }
-    elsif (defined( $main::data{renamedMainFn} )
-        && defined( $main::data{renamedMainFn}{$func} )
-        && $main::data{renamedMainFn}{$func} ne $fren )
-    {
-        $@ =
-            "ERROR: Main subroutine $func() can not be renamed to $fren()"
-          . ' because it was already renamed to subroutine '
-          . $main::data{renamedMainFn}{$func}
-          . '() by '
-          . $main::data{redirectedMainFn}{$func} . '()';
-    }
-    return 0 if ($@);
-
-    # only rename once
-    unless ( defined( $main::data{renamedMainFn} )
-        && $main::data{renamedMainFn}{$func} )
-    {
-        *{$fren} = *{$func};
-        $main::data{renamedMainFn}{$func} = $fren;
-    }
-
-    # only link once
-    unless ( defined( $main::data{redirectedMainFn} )
-        && $main::data{redirectedMainFn}{$func} )
-    {
-        *{$func} = *{$fnew};
-        $main::data{redirectedMainFn}{$func}    = $fnew;
-        $main::data{redirectedMainFnDev}{$func} = $dev
-          if ( main::IsDevice($dev) );
-
-        my $type = main::IsDevice($dev) ? main::GetType($dev) : undef;
-        if ( $type && $modules{$type}{DefFn} =~ /^(.+)::[^:]+$/ ) {
-            $type = $1;
-        }
-        main::Log3 undef, 3,
-          (
-            $type
-            ? "[$type] $dev: "
-            : 'INFO: '
-          )
-          . "Main subroutine $func() was redirected to use subroutine $fnew()"
-          . ( $pkg ne 'main' ? " by FHEM module $pkg" : '' ) . "."
-          . " Original subroutine is still available as $fren().";
-    }
-
-    return $fren;
-}
-
-sub _restoreMainFn {
-  return unless ( caller(0) eq __PACKAGE__ );
-    my ($func) = @_;
-    $func = 'main::' . $func unless ( $func =~ /^main::/ );
-    no strict qw/refs/;
-    return 0 unless ( defined( *{$func} ) );
-    if (   defined( $main::data{renamedMainFn} )
-        && defined( $main::data{renamedMainFn}{$func} ) )
-    {
-        *{$func} = *{ $main::data{renamedMainFn}{$func} };
-
-        my $dev =
-             defined( $main::data{redirectedMainFnDev} )
-          && defined( $main::data{redirectedMainFnDev}{$func} )
-          && main::IsDevice( $main::data{redirectedMainFnDev}{$func} )
-          ? $main::data{redirectedMainFnDev}{$func}
-          : undef;
-        my $type = $dev ? main::GetType($dev) : undef;
-        if ( $type && $modules{$type}{DefFn} =~ /^(.+)::[^:]+$/ ) {
-            $type = $1;
-        }
-        main::Log3 undef, 3,
-          (
-            $type
-            ? "[$type] $dev: "
-            : 'INFO: '
-          )
-          . "Original main subroutine $func() was restored and unlinked from "
-          . $main::data{redirectedMainFn}{$func};
-
-        delete $main::data{redirectedMainFn}{$func};
-        delete $main::data{redirectedMainFnDev}{$func};
-        delete $main::data{renamedMainFn}{$func};
-        delete $main::data{redirectedMainFn}
-          unless ( defined( $main::data{redirectedMainFn} ) );
-        delete $main::data{redirectedMainFnDev}
-          unless ( defined( $main::data{redirectedMainFnDev} ) );
-        delete $main::data{renamedMainFn}
-          unless ( defined( $main::data{renamedMainFn} ) );
-    }
-    if (   defined( $main::data{redirectedMainFn} )
-        && defined( $main::data{redirectedMainFn}{$func} ) )
-    {
-        $@ = "Failed to restore main function $func()";
-        main::Log3 undef, 3, "ERROR: " . $@;
-        return 0;
-    }
-    else {
-    }
-    return $func;
-}
-
-########################################################################################################
-#
-# subroutine to replace 99_SUNRISE_EL.pm in global mode of an Astro device
-#
-########################################################################################################
-
-sub SUNRISE_EL($$$$$$$$$) {
-  my $nt=shift;
-  my $rise=shift;
-  my $isrel=shift;
-  my $daycheck=shift;
-  my $nextDay=shift;
-  my $altit = defined($_[0]) ? $_[0] : "";
-  my $hasalt = 0;
-  if(exists $main::alti{uc($altit)}) {
-      $hasalt = 1;
-      $altit=$main::alti{uc($altit)};
-      shift;
-  } elsif($altit =~ /HORIZON=([\-\+]*[0-9\.]+)/i) {
-      $hasalt = 1;
-      $altit=$1;
-      shift;
-  } else {
-      $altit=-6; #default
-  }
-  my($seconds, $min, $max)=@_;
-  my $needrise = ($rise || $daycheck) ? 1 : 0;
-  my $needset = (!$rise || $daycheck) ? 1 : 0;
-  $seconds = 0 if(!$seconds);
-
-  return MainSUNRISE_EL(
-      $nt,    $rise,    $isrel, $daycheck, $nextDay,
-      $altit, $seconds, $min,   $max
-  ) if ( !exists( $modules{Astro}{global} ) );
-
-  my $hash = $modules{Astro}{global};
-  my $name = $hash->{NAME};
-
-   ############################
-   # If set in global, use longitude/latitude
-   # from global, otherwise set Frankfurt/Germany as
-   # default
-   my $long = AttrVal( $name, "longitude", AttrVal( "global", "longitude", 8.686 ) );
-   my $lat  = AttrVal( $name, "latitude",  AttrVal( "global", "latitude",  50.112 ) );
-   $altit  = AttrVal( $name, "horizon",  AttrVal( "global", "horizon",  -6. ) ) unless($hasalt);
-   Log3 undef, 5, "[FHEM::Astro::SUNRISE_EL] $name: Compute sunrise/sunset for latitude $lat , longitude $long , horizon $altit at " . FmtDateTime($nt);
-
-
-  #my $nt = time;
-  my @lt = localtime($nt);
-  my $gmtoff = main::_calctz($nt,@lt); # in hour
-
-  my ($rt,$st) = _SUNRISE_EL($lat,$long,$altit,$needrise,$needset,$nt,$gmtoff);
-  my $sst = ($rise ? $rt : $st) + ($seconds/3600);
-
-  my $nh = $lt[2] + $lt[1]/60 + $lt[0]/3600;    # Current hour since midnight
-  if($daycheck) {
-    if(defined($min) && defined($max)) { #Forum #43742
-      $min = main::hms2h($min); $max = main::hms2h($max);
-      if($min < $max) {
-        $rt = $min if($rt < $min);
-        $st = $max if($st > $max);
-      } else {
-        $rt = $max if($rt > $max);
-        $st = $min if($st < $min);
-      }
-    }
-    return 1 if($rt <= $nh && $nh <= $st);
-    return 0;
-  }
-
-  $sst = main::hms2h($min) if(defined($min) && (main::hms2h($min) > $sst));
-  $sst = main::hms2h($max) if(defined($max) && (main::hms2h($max) < $sst));
-
-  my $diff = 0;
-  if (($data{AT_RECOMPUTE} ||                     # compute it for tommorow
-    int(($nh-$sst)*3600) >= 0) && $nextDay)  {    # if called a subsec earlier
-    $nt += 86400;
-    @lt = localtime($nt);
-    my $ngmtoff = main::_calctz($nt,@lt); # in hour
-    $diff = 24;
-
-    ($rt,$st) = _SUNRISE_EL($lat,$long,$altit,$needrise,$needset,$nt,$ngmtoff);
-    $sst = ($rise ? $rt : $st) + ($seconds/3600);
-
-    $sst = main::hms2h($min) if(defined($min) && (main::hms2h($min) > $sst));
-    $sst = main::hms2h($max) if(defined($max) && (main::hms2h($max) < $sst));
-  }
-
-  $sst += $diff if($isrel);
-  $sst -= $nh if($isrel == 1);
-
-  return main::h2hms_fmt($sst);
-}
-
-sub _SUNRISE_EL($$$$$$$) {
-    my ( $lat, $long, $altit, $needrise, $needset, $nt, $offset ) = @_;
-    my $hash = $modules{Astro}{global};
-    my $name = $hash->{NAME};
-
-    my $horM = 0.0;
-    my $horE = 0.0;
-    if ( $altit =~ m/^([^:]+)(?::(.+))?$/ ) {
-        $horM = $1;
-        $horE = defined($2) ? $2 : $1;
-    }
-
-    my $tz =
-      AttrVal( $name, "timezone", AttrVal( "global", "timezone", undef ) );
-    SetTime( $nt, $tz );
-    my $JD0 = Date2JD( $Date{day}, $Date{month}, $Date{year} );
-
-    my (
-        $suntransit,            $sunrise,
-        $sunset,                $CivilTwilightMorning,
-        $CivilTwilightEvening,  $NauticTwilightMorning,
-        $NauticTwilightEvening, $AstroTwilightMorning,
-        $AstroTwilightEvening,  $CustomTwilightMorning,
-        $CustomTwilightEvening
-      )
-      = SunRise(
-        $JD0, $deltaT,
-        $long * $DEG,
-        $lat * $DEG,
-        $Date{zonedelta}, $horM, $horE, 0
-      );
-
-    return ( $needrise ? $CustomTwilightMorning : undef ),
-      ( $needset       ? $CustomTwilightEvening : undef );
 }
 
 ########################################################################################################
@@ -3103,10 +2815,8 @@ sub Get($@) {
         <a name="Astrodefine"></a>
         <h4>Define</h4>
         <p>
-            <code>define &lt;name&gt; Astro [global]</code>
-            <br />Defines the Astro device (only one is needed per FHEM installation).
-            <br />
-            Optional parameter 'global' will raise this device to global scope and replace functions provided by <a href="#SUNRISE_EL">SUNRISE_EL</a> so that the computing algorithm of Astro will be used instead.</p>
+            <code>define &lt;name&gt; Astro</code>
+            <br />Defines the Astro device (only one is needed per FHEM installation).</p>
         <p>
         Readings with prefix <i>Sun</i> refer to the sun, with prefix <i>Moon</i> refer to the moon.
         The suffixes for these readings are:
@@ -3262,7 +2972,7 @@ sub Get($@) {
 =end html_DE
 =for :application/json;q=META.json 95_Astro.pm
 {
-  "version": "v2.1.0",
+  "version": "v2.0.3",
   "author": [
     "Prof. Dr. Peter A. Henning <>",
     "Julian Pawlowski <>",
