@@ -1860,7 +1860,7 @@ sub SetTime (;$$$) {
 
     #-- readjust timezone
     local $ENV{TZ} = $tz if ($tz);
-    tzset();
+    tzset() if ( defined( *{'tzset'} ) );
 
     $time = gettimeofday() unless ( defined($time) );
 
@@ -1897,7 +1897,7 @@ sub SetTime (;$$$) {
     delete $Date{tz} if (!$Date{tz} || $Date{tz} eq "" || $Date{tz} eq " ");
 
     delete local $ENV{TZ};
-    tzset();
+    tzset() if ( defined( *{'tzset'} ) );
 
     setlocale(LC_TIME, "");
     setlocale(LC_TIME, $old_lctime);
@@ -1938,7 +1938,7 @@ sub Compute($;$){
   $tz = $params->{"timezone"}
     if ( defined( $params->{"timezone"} ) );
   local $ENV{TZ} = $tz if ($tz);
-  tzset();
+  tzset() if ( defined( *{'tzset'} ) );
 
   #-- geodetic latitude and longitude of observer on WGS84  
   if( defined($params->{"latitude"}) ){
@@ -2190,7 +2190,7 @@ sub Compute($;$){
   $Astro{ObsSeasonN} = $seasonn;
 
   delete local $ENV{TZ};
-  tzset();
+  tzset() if ( defined( *{'tzset'} ) );
 
   return( undef );
 };
