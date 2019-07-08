@@ -1169,6 +1169,11 @@ sub SUNRISE_EL_sr_alt($$$$$$$$$) {
       . "Compute sunrise/sunset for latitude $lat , longitude $long , horizon $altit at "
       . FmtDateTime($nt);
 
+  #-- readjust timezone
+  my $tz =
+    AttrVal( $name, "timezone", AttrVal( "global", "timezone", undef ) );
+  local $ENV{TZ} = $tz if ($tz);
+  tzset() if ( exists &{'tzset'} );
 
   #my $nt = time;
   my @lt = localtime($nt);
@@ -1213,6 +1218,9 @@ sub SUNRISE_EL_sr_alt($$$$$$$$$) {
 
   $sst += $diff if($isrel);
   $sst -= $nh if($isrel == 1);
+
+  delete local $ENV{TZ};
+  tzset() if ( exists &{'tzset'} );
 
   return main::h2hms_fmt($sst);
 }
