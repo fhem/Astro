@@ -776,7 +776,8 @@ sub Define ($@) {
 
  if ($global) {
    return "$type global device $modules{$type}{global}{NAME} is already defined"
-     if ( defined( $modules{$type}{global} ) );
+     if ( defined( $modules{$type}{global} )
+       && $modules{$type}{global}{NAME} ne $name );
    $modules{$type}{global} = $hash;
    $hash->{SCOPE} = 'global';
  }
