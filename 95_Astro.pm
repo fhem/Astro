@@ -1141,7 +1141,7 @@ sub SUNRISE_EL_sr_alt($$$$$$$$$) {
       $hasalt = 1;
       $altit=$main::alti{uc($altit)};
       shift;
-  } elsif($altit =~ /HORIZON=([\-\+]*[0-9\.]+)/i) {
+  } elsif($altit =~ /HORIZON=(([\-\+]*[0-9\.]+)(?::([\-\+]*[0-9\.]+)))/i) {
       $hasalt = 1;
       $altit=$1;
       shift;
