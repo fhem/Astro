@@ -3196,7 +3196,7 @@ sub Get($@) {
 =end html_DE
 =for :application/json;q=META.json 95_Astro.pm
 {
-  "version": "v2.1.0",
+  "version": "v2.1.1",
   "author": [
     "Prof. Dr. Peter A. Henning <>",
     "Julian Pawlowski <>",
